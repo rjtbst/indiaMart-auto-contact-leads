@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 380px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+    
+    .header {
+      background: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+    
+    .app-subtitle {
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .content {
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    
+    .content::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #667eea;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    
+    .input-group {
+      margin-bottom: 14px;
+    }
+    
+    .input-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      color: #555;
+    }
+    
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .inline-group {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .inline-group input {
+      flex: 1;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    
+    .checkbox-label input {
+      margin-right: 6px;
+      cursor: pointer;
+    }
+    
+    .test-mode-box {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      padding: 14px;
+      border-radius: 10px;
+      color: white;
+    }
+    
+    .test-mode-box label {
+      color: white;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+    
+    .test-mode-box input {
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .test-mode-box small {
+      font-size: 11px;
+      opacity: 0.95;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    
+    button {
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .btn-save {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-export {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+    
+    .btn-clear {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+    
+    small {
+      display: block;
+      color: #999;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+    #intervalValue{
+        width: 70px;
+    }
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196F3;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #1976d2;
+      margin-top: 12px;
+    }
+    
+    .footer {
+      background: white;
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="app-title">📊 IndiaMArt Auto Contact</div>
+    <div class="app-subtitle">Configure your scan settings</div>
+  </div>
+
+  <div class="content">
+    <div class="section">
+      <div class="section-title">🎯 Filters</div>
+      
+      <div class="input-group">
+        <label>Medicines (comma separated)</label>
+        <input type="text" id="medicines" placeholder="Ivermectin, Azithromycin, Pregabalin...">
+      </div>
+      
+      <div class="input-group">
+        <label>Minimum Quantity</label>
+        <input type="number" id="minQuantity" value="2" min="1">
+        <small>Products must have quantity greater than this</small>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">✅ Verification</div>
+      
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="verifyEmail" checked>
+          Email
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="verifyMobile" checked>
+          Mobile
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="verifyWhatsapp">
+          WhatsApp
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⏱️ Timing</div>
+      
+      <div class="input-group">
+        <label>Scan Interval</label>
+        <div class="inline-group">
+          <input type="number" id="intervalValue" value="5" min="1">
+          <select id="intervalUnit">
+            <option value="ms">ms</option>
+            <option value="s" selected>sec</option>
+            <option value="m">min</option>
+          </select>
+        </div>
+        <small>How often to rescan for new products</small>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="test-mode-box">
+        <label>
+          <input type="checkbox" id="testMode" checked>
+          🧪 Test Mode - Only Logging
+        </label>
+        <small>⚠️ Verify scraping before enabling auto-click</small>
+      </div>
+      
+      <div class="info-box">
+        💡 Test mode lets you verify that scraping works correctly. Check the sidebar and console logs before disabling it.
+      </div>
+    </div>
+
+    <div class="button-grid">
+      <button class="btn-save" id="saveCriteria">💾 Save Criteria</button>
+      <button class="btn-export" id="exportCsv">📥 Export CSV</button>
+      <button class="btn-clear" id="clearBtn">🗑️ Clear Logs</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Sidebar controls appear on IndiaMArt pages
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
