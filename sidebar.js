@@ -5,17 +5,17 @@
 let sidebar = null;
 
 function initializeSidebar() {
-  if (document.getElementById('indiamart-auto-sidebar')) return;
-  
-  sidebar = document.createElement('div');
-  sidebar.id = 'indiamart-auto-sidebar';
+  if (document.getElementById("indiamart-auto-sidebar")) return;
+
+  sidebar = document.createElement("div");
+  sidebar.id = "indiamart-auto-sidebar";
   sidebar.innerHTML = getSidebarHTML();
-  
+
   document.body.appendChild(sidebar);
   addSidebarStyles();
   attachSidebarEvents();
   updateSidebarStatus();
-  
+
   const updateInterval = setInterval(() => {
     try {
       if (!chrome.runtime?.id) {
@@ -37,7 +37,7 @@ function getSidebarHTML() {
       </button>
       <div class="sidebar-title">
         <span class="icon">📊</span>
-        <span>IndiaMART Auto</span>
+        <span>IndiaMART Auto Contact Leads</span>
       </div>
     </div>
     
@@ -107,16 +107,16 @@ function getSidebarHTML() {
 }
 
 function addSidebarStyles() {
-  if (document.getElementById('indiamart-auto-styles')) return;
-  
-  const style = document.createElement('style');
-  style.id = 'indiamart-auto-styles';
+  if (document.getElementById("indiamart-auto-styles")) return;
+
+  const style = document.createElement("style");
+  style.id = "indiamart-auto-styles";
   style.textContent = `
     #indiamart-auto-sidebar {
       position: fixed;
       top: 0;
       right: 0;
-      width: 580px;
+      width: 600px;
       height: 100vh;
       background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
       box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
@@ -128,19 +128,21 @@ function addSidebarStyles() {
     }
     
     #indiamart-auto-sidebar.collapsed {
-      transform: translateX(540px);
+      transform: translateX(520px);
     }
     
     .sidebar-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 16px 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      position: relative;
     }
     
     .sidebar-title {
+    position: absolute;
+    left: 25%;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -465,102 +467,118 @@ function addSidebarStyles() {
       display: inline-block;
     }
   `;
-  
+
   document.head.appendChild(style);
 }
 
 function attachSidebarEvents() {
-  document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
-  
-  document.getElementById('startBtnSidebar').addEventListener('click', () => {
+  document
+    .getElementById("sidebarToggle")
+    .addEventListener("click", toggleSidebar);
+
+  document.getElementById("startBtnSidebar").addEventListener("click", () => {
     chrome.storage.local.set({ isRunning: true }, () => {
-      if (typeof startScanning === 'function') startScanning();
+      if (typeof startScanning === "function") startScanning();
     });
   });
-  
-  document.getElementById('stopBtnSidebar').addEventListener('click', () => {
+
+  document.getElementById("stopBtnSidebar").addEventListener("click", () => {
     chrome.storage.local.set({ isRunning: false }, () => {
-      if (typeof stopScanning === 'function') stopScanning();
+      if (typeof stopScanning === "function") stopScanning();
     });
   });
-  
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       switchTab(e.currentTarget.dataset.tab);
     });
   });
 }
 
 function toggleSidebar() {
-  if (sidebar) sidebar.classList.toggle('collapsed');
+  if (sidebar) sidebar.classList.toggle("collapsed");
 }
 
 function switchTab(tabName) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-  document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-  document.getElementById(tabName === 'all' ? 'paneAll' : 'paneMatched').classList.add('active');
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach((btn) => btn.classList.remove("active"));
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
+  document
+    .querySelectorAll(".tab-pane")
+    .forEach((pane) => pane.classList.remove("active"));
+  document
+    .getElementById(tabName === "all" ? "paneAll" : "paneMatched")
+    .classList.add("active");
 }
 
 function updateSidebarStatus() {
-  chrome.storage.local.get(['isRunning', 'criteria', 'scanCount', 'productLogs'], (result) => {
-    if (chrome.runtime.lastError) return;
-    
-    updateStatusIndicator(result.isRunning);
-    updateModeBadge(result.criteria);
-    updateStats(result.scanCount, result.productLogs);
-    updateAllProductsTable(result.productLogs || {});
-    updateMatchedProductsTable(result.productLogs || {});
-  });
+  chrome.storage.local.get(
+    ["isRunning", "criteria", "scanCount", "productLogs"],
+    (result) => {
+      if (chrome.runtime.lastError) return;
+
+      updateStatusIndicator(result.isRunning);
+      updateModeBadge(result.criteria);
+      updateStats(result.scanCount, result.productLogs);
+      updateAllProductsTable(result.productLogs || {});
+      updateMatchedProductsTable(result.productLogs || {});
+    }
+  );
 }
 
 function updateStatusIndicator(isRunning) {
-  const statusIndicator = document.getElementById('statusIndicator');
-  const statusText = document.getElementById('statusText');
+  const statusIndicator = document.getElementById("statusIndicator");
+  const statusText = document.getElementById("statusText");
   if (!statusIndicator || !statusText) return;
-  
+
   if (isRunning) {
-    statusIndicator.classList.add('running');
-    statusText.textContent = 'Running';
+    statusIndicator.classList.add("running");
+    statusText.textContent = "Running";
   } else {
-    statusIndicator.classList.remove('running');
-    statusText.textContent = 'Stopped';
+    statusIndicator.classList.remove("running");
+    statusText.textContent = "Stopped";
   }
 }
 
 function updateModeBadge(criteria) {
-  const modeBadge = document.getElementById('modeBadge');
+  const modeBadge = document.getElementById("modeBadge");
   if (!modeBadge || !criteria) return;
-  
+
   const isTestMode = criteria.testMode !== false;
-  modeBadge.className = 'mode-badge ' + (isTestMode ? 'test-mode' : 'live-mode');
-  modeBadge.textContent = isTestMode ? '🧪 Test Mode' : '🔴 Live Mode';
+  modeBadge.className =
+    "mode-badge " + (isTestMode ? "test-mode" : "live-mode");
+  modeBadge.textContent = isTestMode ? "🧪 Test Mode" : "🔴 Live Mode";
 }
 
 function updateStats(scanCount, productLogs) {
-  document.getElementById('scanCountValue').textContent = scanCount || 0;
-  
+  document.getElementById("scanCountValue").textContent = scanCount || 0;
+
   const productsArray = Object.values(productLogs || {});
-  document.getElementById('totalProductsValue').textContent = productsArray.length;
-  document.getElementById('contactedCountValue').textContent = productsArray.filter(p => p.contacted === true).length;
-  document.getElementById('matchedCountValue').textContent = productsArray.filter(p => p.matched === true).length;
+  document.getElementById("totalProductsValue").textContent =
+    productsArray.length;
+  document.getElementById("contactedCountValue").textContent =
+    productsArray.filter((p) => p.contacted === true).length;
+  document.getElementById("matchedCountValue").textContent =
+    productsArray.filter((p) => p.matched === true).length;
 }
 
 function updateAllProductsTable(productLogs) {
-  const container = document.getElementById('tableContainerAll');
-  const count = document.getElementById('tableCountAll');
+  const container = document.getElementById("tableContainerAll");
+  const count = document.getElementById("tableCountAll");
   if (!container) return;
-  
+
   const products = Object.values(productLogs);
   count.textContent = products.length;
-  
+
   if (products.length === 0) {
-    container.innerHTML = '<div class="empty-table">No products scanned yet</div>';
+    container.innerHTML =
+      '<div class="empty-table">No products scanned yet</div>';
     return;
   }
-  
+
   products.sort((a, b) => b.timestamp - a.timestamp);
-  
+
   container.innerHTML = `
     <table class="data-table">
       <thead>
@@ -579,27 +597,28 @@ function updateAllProductsTable(productLogs) {
         </tr>
       </thead>
       <tbody>
-        ${products.map(p => createTableRow(p, false)).join('')}
+        ${products.map((p) => createTableRow(p, false)).join("")}
       </tbody>
     </table>
   `;
 }
 
 function updateMatchedProductsTable(productLogs) {
-  const container = document.getElementById('tableContainerMatched');
-  const count = document.getElementById('tableCountMatched');
+  const container = document.getElementById("tableContainerMatched");
+  const count = document.getElementById("tableCountMatched");
   if (!container) return;
-  
-  const products = Object.values(productLogs).filter(p => p.matched === true);
+
+  const products = Object.values(productLogs).filter((p) => p.matched === true);
   count.textContent = products.length;
-  
+
   if (products.length === 0) {
-    container.innerHTML = '<div class="empty-table">No matched products yet</div>';
+    container.innerHTML =
+      '<div class="empty-table">No matched products yet</div>';
     return;
   }
-  
+
   products.sort((a, b) => b.timestamp - a.timestamp);
-  
+
   container.innerHTML = `
     <table class="data-table">
       <thead>
@@ -617,68 +636,84 @@ function updateMatchedProductsTable(productLogs) {
         </tr>
       </thead>
       <tbody>
-        ${products.map(p => createTableRow(p, true)).join('')}
+        ${products.map((p) => createTableRow(p, true)).join("")}
       </tbody>
     </table>
   `;
 }
 
 function createTableRow(p, hideMatch) {
-  const rowClass = p.contacted ? 'contacted-row' : (p.matched ? 'matched-row' : '');
-  
+  const rowClass = p.contacted
+    ? "contacted-row"
+    : p.matched
+    ? "matched-row"
+    : "";
+
   // CRITICAL: Cell classes based on match status
-  const titleClass = p.matchedMedicine ? 'cell-green' : 'cell-red';
-  const ageCheckClass = p.matchedAge ? 'cell-green' : 'cell-red';
-  const countryCheckClass = p.matchedCountry ? 'cell-green' : 'cell-red';
-  const emailClass = p.matchedEmail ? 'cell-green' : 'cell-red';
-  const phoneClass = p.matchedPhone ? 'cell-green' : 'cell-red';
-  
-  const matchBadge = p.matched ? '<span class="badge badge-match">✓ MATCH</span>' : '<span class="badge badge-no-match">✗ NO</span>';
-  const statusBadge = p.contacted ? '<span class="badge badge-contacted">CONTACTED</span>' : '<span class="badge badge-available">AVAILABLE</span>';
-  
-  const ageDisplay = p.ageMonths || p.userMonthsOld || '-';
-  
+  const titleClass = p.matchedMedicine ? "cell-green" : "cell-red";
+  const ageCheckClass = p.matchedAge ? "cell-green" : "cell-red";
+  const countryCheckClass = p.matchedCountry ? "cell-green" : "cell-red";
+  const emailClass = p.matchedEmail ? "cell-green" : "cell-red";
+  const phoneClass = p.matchedPhone ? "cell-green" : "cell-red";
+
+  const matchBadge = p.matched
+    ? '<span class="badge badge-match">✓ MATCH</span>'
+    : '<span class="badge badge-no-match">✗ NO</span>';
+  const statusBadge = p.contacted
+    ? '<span class="badge badge-contacted">CONTACTED</span>'
+    : '<span class="badge badge-available">AVAILABLE</span>';
+
+  const ageDisplay = p.ageMonths || p.userMonthsOld || "-";
+
   if (hideMatch) {
     return `
       <tr class="${rowClass}">
         <td>${p.time}</td>
-        <td class="${titleClass}"><div class="truncate" title="${esc(p.title)}">${esc(p.title)}</div></td>
+        <td class="${titleClass}"><div class="truncate" title="${esc(
+      p.title
+    )}">${esc(p.title)}</div></td>
         <td class="${titleClass}">✓</td>
         <td>${ageDisplay}</td>
-        <td class="${ageCheckClass}">${p.matchedAge ? '✓' : '✗'}</td>
-        <td><div class="truncate" title="${esc(p.country)}">${esc(p.country)}</div></td>
-        <td class="${countryCheckClass}">${p.matchedCountry ? '✓' : '✗'}</td>
-        <td class="${emailClass}">${p.matchedEmail ? '✓' : '✗'}</td>
-        <td class="${phoneClass}">${p.matchedPhone ? '✓' : '✗'}</td>
+        <td class="${ageCheckClass}">${p.matchedAge ? "✓" : "✗"}</td>
+        <td><div class="truncate" title="${esc(p.country)}">${esc(
+      p.country
+    )}</div></td>
+        <td class="${countryCheckClass}">${p.matchedCountry ? "✓" : "✗"}</td>
+        <td class="${emailClass}">${p.matchedEmail ? "✓" : "✗"}</td>
+        <td class="${phoneClass}">${p.matchedPhone ? "✓" : "✗"}</td>
         <td>${statusBadge}</td>
       </tr>
     `;
   }
-  
+
   return `
     <tr class="${rowClass}">
       <td>${p.time}</td>
-      <td class="${titleClass}"><div class="truncate" title="${esc(p.title)}">${esc(p.title)}</div></td>
+      <td class="${titleClass}"><div class="truncate" title="${esc(
+    p.title
+  )}">${esc(p.title)}</div></td>
       <td>${matchBadge}</td>
-      <td class="${titleClass}">${p.matchedMedicine ? '✓' : '✗'}</td>
+      <td class="${titleClass}">${p.matchedMedicine ? "✓" : "✗"}</td>
       <td>${ageDisplay}</td>
-      <td class="${ageCheckClass}">${p.matchedAge ? '✓' : '✗'}</td>
-      <td><div class="truncate" title="${esc(p.country)}">${esc(p.country)}</div></td>
-      <td class="${countryCheckClass}">${p.matchedCountry ? '✓' : '✗'}</td>
-      <td class="${emailClass}">${p.matchedEmail ? '✓' : '✗'}</td>
-      <td class="${phoneClass}">${p.matchedPhone ? '✓' : '✗'}</td>
+      <td class="${ageCheckClass}">${p.matchedAge ? "✓" : "✗"}</td>
+      <td><div class="truncate" title="${esc(p.country)}">${esc(
+    p.country
+  )}</div></td>
+      <td class="${countryCheckClass}">${p.matchedCountry ? "✓" : "✗"}</td>
+      <td class="${emailClass}">${p.matchedEmail ? "✓" : "✗"}</td>
+      <td class="${phoneClass}">${p.matchedPhone ? "✓" : "✗"}</td>
       <td>${statusBadge}</td>
     </tr>
   `;
 }
 
 function esc(str) {
-  const div = document.createElement('div');
-  div.textContent = str || '';
+  const div = document.createElement("div");
+  div.textContent = str || "";
   return div.innerHTML;
 }
 
-window.showSidebarNotification = function(title, message) {
+window.showSidebarNotification = function (title, message) {
   // Simple console log for now
-  console.log(`%c${title}: ${message}`, 'color: #667eea;');
+  console.log(`%c${title}: ${message}`, "color: #667eea;");
 };
