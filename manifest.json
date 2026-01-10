@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "IndiaMArt Auto Contact",
-  "version": "1.0",
-  "description": "Automatically filter and contact suppliers on IndiaMArt",
+  "version": "1.0.0",
+  "description": "Automatically scan and contact IndiaMArt buyers based on custom criteria",
   "permissions": [
     "storage",
     "activeTab",
-    "scripting",
-    "tabs"
+    "scripting"
   ],
   "host_permissions": [
     "*://*.indiamart.com/*"
@@ -15,6 +14,13 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["*://*.indiamart.com/*"],
+      "js": ["content.js", "sidebar.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -23,14 +29,6 @@
       "128": "icon128.png"
     }
   },
-  "content_scripts": [
-    {
-      "matches": ["*://*.indiamart.com/*"],
-      "js": ["content.js"],
-      "run_at": "document_end",
-      "all_frames": false
-    }
-  ],
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",

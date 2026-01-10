@@ -11,9 +11,12 @@ chrome.runtime.onInstalled.addListener(() => {
         isRunning: false,
         logs: [],
         scanCount: 0,
+        contactedProducts: {}, // Track contacted products to prevent duplicates
         criteria: {
           medicines: [],
           minQuantity: 2,
+          monthsBefore: 2, // Default to 2 months minimum user age
+          countries: [], // Default to all countries
           verifyEmail: true,
           verifyMobile: true,
           verifyWhatsapp: false,
@@ -78,3 +81,23 @@ setInterval(() => {
     }
   });
 }, 30000); // Every 30 seconds
+
+// Clean up old contacted products (optional - older than 30 days)
+setInterval(() => {
+  chrome.storage.local.get(['contactedProducts'], (result) => {
+    if (result.contactedProducts) {
+      const now = Date.now();
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+      const cleaned = {};
+      
+      Object.entries(result.contactedProducts).forEach(([id, data]) => {
+        if (now - data.timestamp < thirtyDays) {
+          cleaned[id] = data;
+        }
+      });
+      
+      chrome.storage.local.set({ contactedProducts: cleaned });
+      console.log('Cleaned old contacted products');
+    }
+  });
+}, 24 * 60 * 60 * 1000); // Every 24 hours

@@ -1,572 +1,1419 @@
-# IndiaMArt Auto Contact Chrome Extension
+# 📊 IndiaMArt Auto Contact Extension
 
-A Chrome extension that automatically filters and contacts suppliers on IndiaMArt with a **persistent sidebar interface** that works across all tabs.
-
-## Features
-
-- **🎯 Persistent Sidebar**: Modern sidebar overlay on the right side of any IndiaMArt page
-- **🔄 Continuous Operation**: Keeps running even when you switch tabs or navigate
-- **🧪 Test Mode**: Verify scraping is working correctly before enabling auto-contact
-- **Smart Filtering**: Filter products by medicine names, quantity, and verification requirements
-- **Automated Contact**: Automatically clicks "Contact Now" button for matching products (when enabled)
-- **Real-time Stats**: Live counters for scans, matches, and contacted suppliers
-- **📊 Activity Feed**: Recent activity log in the sidebar
-- **🔔 Toast Notifications**: Get instant notifications for matches and contacts
-- **Verification Checks**: Verify suppliers by Email, Mobile, and WhatsApp
-- **CSV Export**: Export all logs to CSV for analysis
-- **💾 Smart Storage**: Efficiently stores data in local storage (keeps last 500 entries)
-
-## Installation
-
-1. **Download the Extension Files**
-   - Create a new folder called `indiamart-extension`
-   - Save all the files in this folder:
-     - `manifest.json`
-     - `popup.html`
-     - `popup.js`
-     - `content.js`
-     - `background.js`
-
-2. **Create Icons** (optional but recommended)
-   - Create three PNG icons: `icon16.png`, `icon48.png`, `icon128.png`
-   - Or use any square PNG image and rename it to these sizes
-
-3. **Load Extension in Chrome**
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in top-right corner)
-   - Click "Load unpacked"
-   - Select the `indiamart-extension` folder
-   - The extension icon should appear in your toolbar
-
-## Usage
-
-### 🧪 IMPORTANT: Start with Test Mode
-
-**Always verify scraping works before enabling auto-contact!**
-
-### 1. Configure Settings
-
-1. Click the extension icon in Chrome toolbar
-2. Fill in the filter criteria:
-   - **Medicines**: Enter medicine names separated by commas
-   - **Minimum Quantity**: Products must have quantity greater than this value
-   - **Verification Requirements**: Check which verifications are required
-   - **Test Mode**: ✅ Keep CHECKED initially (only logs, doesn't click)
-   - **Scan Interval**: Choose how often to rescan
-     - Recommended: 5-10 seconds for balanced performance
-3. Click **"💾 Save Criteria"**
-
-### 2. Start Scanning with Sidebar
-
-1. **Navigate to any IndiaMArt page** (search results, supplier page, etc.)
-2. **Sidebar appears automatically** on the right side of the page
-3. Click **"▶ Start"** button in the sidebar
-4. The extension will now:
-   - Continuously scan visible products
-   - Show real-time stats (Scans, Matches, Contacted)
-   - Display recent activity in the sidebar feed
-   - Show toast notifications for matches
-   - Log detailed information in browser console (F12)
-
-### 3. Monitor with Sidebar
-
-The sidebar shows:
-- **Status Indicator**: Running (green) or Stopped (red)
-- **Mode Badge**: 🧪 Test Mode or 🔴 Live Mode
-- **Real-time Stats**:
-  - Scans: Total number of scan cycles
-  - Matches: Products that met all criteria
-  - Contacted: Suppliers contacted (live mode only)
-- **Recent Activity**: Last 10 product scans with match status
-- **Toast Notifications**: Pop-up alerts for important events
-
-### 4. Verify Scraping (Test Mode)
-
-**Open Browser Console** (Press F12):
-```
-╔═══════════════════════════════════════════════════════════╗
-║  IndiaMArt Auto Contact Extension Started                ║
-╚═══════════════════════════════════════════════════════════╝
-Mode: TEST MODE (Logging Only)
-
-=== Scan #1 at 2:30:45 PM ===
-Found 12 listings to process
-
-━━━ Listing #1 ━━━
-📋 Scraped Data:
-  Title: "Ivermectin Tablets 12mg"
-  Country: "USA"
-  Quantity: "100 Pieces"
-  Buyer: "ABC Pharma"
-  Available: "Mobile Number is Available, Email ID is Available"
-  Contact Button: ✓ Found
-
-🔍 Matching Criteria:
-  Medicine: ✓ (matched: "ivermectin")
-  Quantity: ✓ (100 > 2)
-  Verification: ✓ (email:✓, mobile:✓)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🎯 FULL MATCH!
-  🧪 TEST MODE: Would click contact button (not clicking)
-```
-
-### 5. Enable Live Mode (Auto-Contact)
-
-Once verified:
-1. Click extension icon
-2. **Uncheck** "Test Mode"
-3. Click **"💾 Save Criteria"**
-4. Sidebar updates to show **🔴 Live Mode**
-5. Now matching products will be automatically contacted!
-
-### 6. Continuous Operation
-
-**The extension keeps running:**
-- ✅ When you switch tabs
-- ✅ When you navigate to different IndiaMArt pages
-- ✅ When you scroll or interact with the page
-- ✅ Until you click **"⏸ Stop"** in the sidebar
-
-**To stop:** Click **"⏸ Stop"** button in the sidebar
-
-### 7. Sidebar Controls
-
-- **Toggle Sidebar**: Click the ◀ button to collapse/expand
-- **Start/Stop**: Control scanning directly from sidebar
-- **Always visible**: Sidebar stays on screen across all IndiaMArt pages
-
-### 8. Export Data
-
-1. Click extension icon
-2. Click **"📥 Export CSV"** to download all logs
-3. Use **"🗑️ Clear Logs"** to reset history
-
-## Customization
-
-### Adjust Scan Interval
-
-**Recommended Settings:**
-
-- **Fast Monitoring** (2-5 seconds):
-  - Best for: Active product feeds with frequent updates
-  - Good balance of speed and performance
-
-- **Normal Monitoring** (10-15 seconds):
-  - Best for: Periodic checks during work hours
-  - Low CPU usage, natural browsing pattern
-
-- **Background Monitoring** (1-3 minutes):
-  - Best for: Passive monitoring throughout the day
-  - Minimal resource usage
-
-### Verification Options
-
-- **Email**: Product shows email verification
-- **Mobile**: Product shows mobile verification  
-- **WhatsApp**: Product shows WhatsApp verification
-- Check only the verifications important to you
-
-## Tips
-
-1. **🧪 ALWAYS Start with Test Mode**: Never enable live mode until verified
-2. **📊 Watch the Sidebar**: Real-time stats show exactly what's happening
-3. **🔍 Check Console**: Press F12 to see detailed scraping information
-4. **🎯 Start Specific**: Use exact medicine names to reduce false matches
-5. **⏱️ Choose Right Interval**: 5-10 seconds is ideal for most use cases
-6. **🔔 Watch Notifications**: Toast alerts show important events instantly
-7. **📱 Works Everywhere**: Navigate freely, the sidebar follows you
-8. **💾 Auto-saves**: All data persists across browser sessions
-9. **📥 Export Regularly**: Download CSV logs to track contacts
-10. **🧹 Clean Storage**: Clear logs periodically to maintain performance
-
-## How It Works
-
-### Persistent Sidebar
-- Appears automatically on all IndiaMArt pages
-- Stays visible when navigating or switching tabs
-- Collapsible to save screen space
-- Modern dark theme with gradient accents
-
-### Smart Storage Management
-- Keeps last 500 log entries
-- Automatically prunes old data
-- Stores in browser local storage
-- Survives browser restarts
-
-### Continuous Scanning
-- Runs in background across all IndiaMArt tabs
-- Auto-resumes after page navigation
-- Maintains state across sessions
-- Efficient resource usage
-
-## Troubleshooting
-
-**Sidebar not appearing?**
-- Make sure you're on an IndiaMArt page
-- Refresh the page (F5)
-- Check if extension is enabled in chrome://extensions/
-
-**Extension not working?**
-- Verify criteria are saved (click extension icon)
-- Check that Test Mode status is correct
-- Try refreshing the page
-
-**No products detected?**
-- Open console (F12) and look for errors
-- Check if "Found X listings" appears in console
-- IndiaMArt may have changed their HTML structure
-
-**Fields showing "Not found"?**
-- IndiaMArt changed their class names
-- Update selectors in `content.js`
-- Check console for extraction errors
-
-**Buttons not clicking in Live Mode?**
-- Verify "Contact Button: ✓ Found" in console
-- Check if buttons are disabled or hidden
-- May need to update button selector
-
-## Privacy & Safety
-
-- Only works on IndiaMArt.com
-- All data stored locally in your browser
-- No data sent to external servers
-- Smart storage management (last 500 entries)
-- Use responsibly and follow IndiaMArt's terms of service
-
-## Technical Details
-
-- **Manifest Version**: 3
-- **Permissions**: storage, activeTab, alarms, scripting
-- **Content Script**: Injects sidebar on all IndiaMArt pages
-- **Storage**: Chrome local storage with automatic cleanup
-- **UI**: Modern sidebar with dark gradient theme
+A powerful Chrome extension for IndiaMArt sellers to automatically scan, filter, and contact potential buyers based on customizable criteria - **runs continuously in the background** even when you're browsing other tabs.
 
 ---
 
-**Version**: 2.0 (Sidebar Edition)  
-**Last Updated**: January 2026  
-**Compatible**: Chrome 88+
+## 🎯 Key Features
 
-- **🧪 Test Mode**: Verify scraping is working correctly before enabling auto-contact
-- **Smart Filtering**: Filter products by medicine names, quantity, and verification requirements
-- **Automated Contact**: Automatically clicks "Contact Now" button for matching products (when enabled)
-- **Real-time Monitoring**: Continuous scanning at customizable intervals
-- **Verification Checks**: Verify suppliers by Email, Mobile, and WhatsApp
-- **Detailed Logging**: See all scanned products with complete scraped data
-- **Live Logging**: Real-time match/no-match status with detailed reasons
-- **CSV Export**: Export all logs to CSV for analysis
-- **Visual Feedback**: Products are highlighted green (match) or red (no match)
-- **Console Debugging**: Detailed console logs for troubleshooting scraping issues
+- ✅ **Smart Filtering**: Filter products by medicine names, quantity, country, and posting date
+- 🔄 **Background Scanning**: Runs continuously in background tab - browse YouTube while it works!
+- 🧪 **Test Mode**: Verify filtering logic before enabling auto-contact
+- 📊 **Real-time Dashboard**: Live sidebar showing scanned products and statistics
+- 🚫 **Duplicate Prevention**: Tracks contacted products to prevent re-contacting (30-day memory)
+- 📥 **CSV Export**: Export all scanning logs for analysis
+- ⚡ **Customizable Intervals**: Scan every few seconds, minutes, or longer
+- 💾 **Persistent Memory**: Remembers everything - criteria, logs, contacted products
+- 🔄 **Auto-Resume**: Automatically resumes scanning after Chrome restart
 
-## Installation
+---
 
-1. **Download the Extension Files**
-   - Create a new folder called `indiamart-extension`
-   - Save all the files in this folder:
-     - `manifest.json`
-     - `popup.html`
-     - `popup.js`
-     - `content.js`
-     - `background.js`
+## 📦 Installation
 
-2. **Create Icons** (optional but recommended)
-   - Create three PNG icons: `icon16.png`, `icon48.png`, `icon128.png`
-   - Or use any square PNG image and rename it to these sizes
+### Method 1: Load Unpacked (Development)
 
-3. **Load Extension in Chrome**
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in top-right corner)
-   - Click "Load unpacked"
-   - Select the `indiamart-extension` folder
-   - The extension icon should appear in your toolbar
+1. **Download/Clone** this repository to your computer
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable **"Developer mode"** (toggle switch in top right corner)
+4. Click **"Load unpacked"** button
+5. Select the extension folder containing all files
+6. The extension icon (📊) should appear in your Chrome toolbar
 
-## Usage
+### Method 2: Chrome Web Store (When Published)
 
-### 🧪 IMPORTANT: Start with Test Mode
+*Coming soon - will be available for one-click installation*
 
-**Before enabling auto-contact, always verify the scraping is working correctly:**
+### ✅ Verify Installation
 
-1. Keep **"Test Mode"** checkbox **CHECKED** (enabled by default)
-2. Set up your criteria and start scanning
-3. Open browser console (F12) to see detailed scraping logs
-4. Check the Live Log panel for scraped data
-5. Verify that:
-   - Product titles are being extracted correctly
-   - Quantities are parsed properly
-   - Verification status is detected
-   - Contact buttons are found
-   - Matching logic is working as expected
+After installation, you should see:
+- Extension icon in toolbar
+- No errors in `chrome://extensions/`
+- Click the icon to see the popup interface
 
-Once you confirm everything is working correctly, you can disable Test Mode to enable auto-clicking.
+---
 
-### 1. Set Up Criteria
+## 🚀 Quick Start Guide
 
-1. Click the extension icon in Chrome toolbar
-2. Fill in the filter criteria:
-   - **Medicines**: Enter medicine names separated by commas (e.g., "Ivermectin, Azithromycin, Pregabalin")
-   - **Minimum Quantity**: Products must have quantity greater than this value
-   - **Verification Requirements**: Check which verifications are required
-   - **Test Mode**: 
-     - ✅ **CHECKED (Recommended)**: Only logs matches, doesn't click buttons
-     - ❌ **UNCHECKED (Live Mode)**: Automatically clicks contact buttons for matches
-   - **Scan Interval**: Choose how often to rescan the page
-     - Enter a number value
-     - Select unit: Milliseconds, Seconds, or Minutes
-     - Examples:
-       - `850 Milliseconds` = Scan every 0.85 seconds (very fast)
-       - `5 Seconds` = Scan every 5 seconds (balanced)
-       - `2 Minutes` = Scan every 2 minutes (slow, for monitoring)
-3. Click **"Save Criteria"**
+### Step 1: Configure Your Criteria
 
-### 2. Start Scanning in Test Mode
+1. **Click the extension icon** (📊) in your Chrome toolbar
+2. **Fill in your filtering criteria**:
 
-1. Navigate to any IndiaMArt page with product listings
-2. Click the extension icon
-3. Make sure **Test Mode** is enabled (yellow badge showing "🧪 TEST MODE")
-4. Click **"Start"** button
-5. **Open Browser Console** (Press F12, then click "Console" tab)
-6. The extension will now:
-   - Scan all visible products
-   - Log detailed information about each product
-   - Show what data was scraped from each field
-   - Display matching logic (which criteria passed/failed)
-   - Indicate which products would be contacted in live mode
-   - **NOT click any buttons**
+   **🎯 Filters Section:**
+   - **Medicines**: Enter comma-separated medicine names
+     - Example: `Ivermectin, Azithromycin, Pregabalin, Doxycycline`
+     - Case insensitive (will match "ivermectin" or "IVERMECTIN")
+   
+   - **Minimum Quantity**: Set threshold (default: 2)
+     - Only contacts products with quantity > this number
+     - Example: Set to `5` to only contact bulk orders
+   
+   - **Posted Within**: Select timeframe (default: Last 3 months)
+     - Options: 1, 2, 3, 6, 12, 24 months, or "Any time"
+     - Filters out old/stale listings
+   
+   - **Country Filter**: Optional - specify countries
+     - Leave empty to contact from all countries
+     - Example: `India, USA, UK, Canada`
+     - Comma-separated, case insensitive
 
-### 3. Verify Scraping is Working
+   **✅ Verification Section:**
+   - ☑️ **Email**: Require email verification (default: checked)
+   - ☑️ **Mobile**: Require mobile verification (default: checked)
+   - ☐ **WhatsApp**: Require WhatsApp verification (default: unchecked)
 
-In the console, you should see logs like:
+   **⏱️ Timing Section:**
+   - **Scan Interval**: How often to rescan the page
+     - Fast: 1-5 seconds (high activity)
+     - Moderate: 10-30 seconds (balanced)
+     - Slow: 1-5 minutes (background monitoring)
+   
+   **🧪 Test Mode:**
+   - ☑️ **Keep this CHECKED for first run** (default: checked)
+   - Logs everything but doesn't click buttons
+   - Uncheck only after verifying it works correctly
+
+3. **Click "💾 Save Criteria"**
+4. You'll see a confirmation with your settings
+
+### Step 2: Navigate to IndiaMArt
+
+1. **Open a new tab** and go to IndiaMArt
+2. Navigate to **any page with product listings** (buy leads, search results, etc.)
+3. **A sidebar will automatically appear** on the right side of the page
+
+### Step 3: Start Scanning
+
+1. In the **sidebar**, click the **"▶ Start"** button
+2. **You'll see**:
+   - Status changes to "Running" (green dot)
+   - Mode badge shows "🧪 Test Mode" or "🔴 Live Mode"
+   - Statistics start updating (Scans, Matches, Contacted)
+   - Product table fills with scanned items
+
+### Step 4: Monitor Results
+
+**Option A - Sidebar View (Visual):**
+- Watch the **Product Details table** in the sidebar
+- Color-coded rows:
+  - 🟢 **Green**: Matched all criteria
+  - 🔴 **Red**: Did not match criteria
+  - 🟣 **Purple**: Successfully contacted
+  - 🟡 **Orange**: Would contact (test mode only)
+
+**Option B - Console Logs (Detailed):**
+1. Press `F12` or `Ctrl+Shift+I` to open DevTools
+2. Go to the **Console** tab
+3. You'll see detailed logs for each product:
+   ```
+   ━━━ Listing #1 ━━━
+   📋 Scraped Data:
+     Title: "Ivermectin Tablets Bulk Order"
+     Country: "India"
+     Quantity: "500"
+     Buyer: "ABC Pharma Ltd"
+     Product ID: "ivermectintabletsbulkorder_abcpharmaltd"
+   
+   🔍 Matching Criteria:
+     Medicine: ✓ (matched: "ivermectin")
+     Quantity: ✓ (500 > 2)
+     Country: ✓ (matched: "india")
+     Date: ✓ (2 months ago)
+     Verification: ✓ (email:✓, mobile:✓)
+   
+   🎯 FULL MATCH!
+   🧪 TEST MODE: Would click contact button (not clicking)
+   ```
+
+### Step 5: Switch Tabs (Optional)
+
+**Here's the magic**: 
+- You can **switch to YouTube, email, or any other tab**
+- The extension **continues scanning in the background**
+- **Come back anytime** to check the sidebar for results
+
+### Step 6: Go Live (When Ready)
+
+After verifying everything works in test mode:
+
+1. **Click the extension icon** again
+2. **Uncheck** "🧪 Test Mode - Only Logging"
+3. **Read the warning**: "⚠️ Verify scraping before enabling auto-click"
+4. **Click "💾 Save Criteria"**
+5. The extension will now **automatically click contact buttons** on matching products
+6. Watch the sidebar - contacted products turn **purple** with "Contacted" badge
+
+---
+
+## 🔄 How Background Scanning Works
+
+### ✅ What Stays Active
+
+As long as **Chrome is running** and the **IndiaMArt tab is open** (anywhere):
 
 ```
-╔═══════════════════════════════════════════════════════════╗
-║  IndiaMArt Auto Contact Extension Started                ║
-╚═══════════════════════════════════════════════════════════╝
-Mode: TEST MODE (Logging Only)
-
-=== Scan #1 at 2:30:45 PM ===
-
-━━━ Listing #1 ━━━
-📋 Scraped Data:
-  Title: "Ivermectin Tablets 12mg"
-  Country: "USA"
-  Quantity: "100 Pieces"
-  Buyer: "ABC Pharma"
-  Available: "Mobile Number is Available, Email ID is Available"
-  Contact Button: ✓ Found
-
-🔍 Matching Criteria:
-  Medicine: ✓ (matched: "ivermectin")
-  Quantity: ✓ (100 > 2)
-  Verification: ✓ (email:✓, mobile:✓)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🎯 FULL MATCH!
-  🧪 TEST MODE: Would click contact button (not clicking)
+✅ Scanning continues every X seconds (your interval)
+✅ New products are detected automatically
+✅ Matching logic runs in background
+✅ Contact buttons get clicked (in live mode)
+✅ Logs are saved continuously
+✅ Statistics update in real-time
+✅ Duplicate tracking prevents re-contacting
 ```
 
-**Check in the Live Log panel:**
-- Each product should show "📋 Scraped Data" section
-- Verify all fields are extracted correctly
-- Products matching criteria show "Would Contact (Test Mode)" badge
+**You can**:
+- ✅ Switch to YouTube and watch videos
+- ✅ Browse other websites in different tabs
+- ✅ Minimize Chrome window
+- ✅ Work in other applications
+- ✅ Switch between multiple Chrome windows
 
-### 4. Enable Live Mode (Auto-Contact)
+**The IndiaMArt tab continues working silently in the background!**
 
-Once you've verified the scraping is working correctly:
+### 🔄 Auto-Resume Feature
 
-1. **Uncheck** the "Test Mode" checkbox
-2. Click **"Save Criteria"**
-3. Click **"Stop"** then **"Start"** to restart with new settings
-4. Status will show "🔴 LIVE MODE - Auto-Clicking Enabled"
-5. Now matching products will be automatically contacted!
+The extension is **smart about persistence**:
 
-### 3. Monitor Results
+1. **Started scanning → Closed Chrome**
+   - Next time you open Chrome and visit IndiaMArt
+   - Extension **automatically resumes** scanning after 1.5 seconds
+   - Uses your saved criteria
+   - Remembers which products were already contacted
 
-- **Mode Indicator**:
-  - 🧪 Yellow Badge = Test Mode (Safe, only logging)
-  - 🔴 Red Badge = Live Mode (Auto-clicking enabled)
-- **Live Log**: See real-time results of scanned products with scraped data
-- **Status Information**:
-  - Current scan status (Running/Stopped)
-  - Active tab URL
-  - Time since last scan
-  - Total scans completed
-  - Time until next scan
-  - Current scan interval
-- **Match Indicators**:
-  - ✓ Green = Match (all criteria met)
-  - ✗ Red = No match
-  - "Would Contact (Test Mode)" = Match found in test mode
-  - "Just Contacted" = Button was clicked in live mode
-  - Already contacted products are skipped
-- **Scraped Data Section**: Each log entry shows:
-  - Raw data extracted from each field
-  - Whether contact button was found
-  - All extracted values for debugging
-- **Console Logging**: Open DevTools (F12) to see detailed scan logs including:
-  - Scan number and timestamp
-  - Each product evaluation with raw extracted data
-  - Match/no-match reasons for each criterion
-  - Button click confirmations (in live mode)
-  - Test mode indicators
+2. **Started scanning → Closed IndiaMArt tab**
+   - Scanning stops (nothing to scan)
+   - **Open a new IndiaMArt tab**
+   - Extension **auto-resumes** within 1.5 seconds
 
-### 4. Export Data
+3. **Stopped scanning → Closed Chrome**
+   - Stays stopped
+   - Manual start required next time
 
-- Click **"Export CSV"** to download all logs
-- Use **"Clear"** to reset the log history
+### ❌ What Stops Scanning
 
-### 5. Stop Scanning
+| Action | Scanning Stops? | Auto-Resume? |
+|--------|----------------|--------------|
+| Switch to another tab | ❌ No - keeps running | N/A - never stopped |
+| Minimize Chrome | ❌ No - keeps running | N/A - never stopped |
+| Close IndiaMArt tab | ✅ Yes | ✅ Yes (when you open new IndiaMArt tab) |
+| Close Chrome completely | ✅ Yes | ✅ Yes (if it was running before) |
+| Click "Stop" button | ✅ Yes | ❌ No (manual restart) |
+| Computer restart | ✅ Yes | ✅ Yes (if it was running before) |
+| Extension disabled | ✅ Yes | ❌ No |
 
-- Click **"Stop"** button to pause scanning
-- The extension will remember your criteria
-- Settings persist between browser sessions
+---
 
-## How It Works
+## 🧠 Understanding the Filtering Logic
 
-### Filtering Logic
+### How Matching Works
 
-A product matches your criteria if ALL of these conditions are met:
+A product must pass **ALL** these checks to trigger contact:
 
-1. **Medicine Name**: Product title contains at least one of your medicine names (case-insensitive)
-2. **Quantity**: Product quantity is greater than your minimum quantity
-3. **Verification**: Product meets your verification requirements (Email/Mobile/WhatsApp)
+```javascript
+1. Medicine Match
+   ✓ Product title contains at least one medicine from your list
+   → Case insensitive: "Ivermectin" matches "ivermectin", "IVERMECTIN"
 
-### Auto-Contact Feature
+2. Quantity Check
+   ✓ Extracted quantity > your minimum threshold
+   → Extracts first number found in quantity field
+   → Example: "500 units" → extracts 500
 
-When a product matches:
-- The extension highlights it in green
-- After 0.5 seconds, it automatically clicks the "Contact Now" button
-- The product is marked as "contacted" in logs
-- Already contacted products are skipped in future scans
+3. Country Check
+   ✓ If you specified countries: product country must match
+   ✓ If you left empty: all countries pass
+   → Case insensitive matching
 
-### Continuous Monitoring
+4. Date Check
+   ✓ Product posted within your specified timeframe
+   → Handles formats: "2 months ago", "Jan 15, 2024", etc.
+   → If date can't be parsed: assumes valid (gives benefit of doubt)
 
-- The extension rescans the page at your specified interval
-- New products are automatically detected and processed
-- Perfect for monitoring fresh leads
+5. Verification Check
+   ✓ Product must have ALL required verifications
+   → If you checked "Email": must show email verification
+   → If you checked "Mobile": must show mobile verification
+   → If you checked "WhatsApp": must show WhatsApp verification
 
-## Customization
+6. Duplicate Check
+   ✓ Product must NOT have been contacted before
+   → Creates unique ID from title + buyer name
+   → Tracked for 30 days in Chrome storage
+```
 
-### Adjust Scan Interval
+### Example Scenarios
 
-The scan interval determines how often the extension checks the page for new products:
+**Scenario 1 - Perfect Match:**
+```
+Product: "Ivermectin 500mg Tablets - Bulk Order"
+Country: "India"
+Quantity: "1000 units"
+Posted: "1 month ago"
+Verification: Email ✓, Mobile ✓
 
-**Recommended Settings:**
+Your Criteria:
+Medicines: ivermectin, azithromycin
+Min Quantity: 2
+Countries: India, USA
+Posted Within: 3 months
+Verify: Email ✓, Mobile ✓
 
-- **Ultra-Fast Monitoring** (100-500ms / 0.1-0.5s):
-  - Use when: New products appear very frequently
-  - Pros: Catches new leads instantly
-  - Cons: High CPU usage, may appear unnatural
+Result: ✅ MATCH → Will contact (if live mode)
+```
+
+**Scenario 2 - Quantity Too Low:**
+```
+Product: "Ivermectin 100mg Tablets"
+Quantity: "1 unit"
+(Other criteria match)
+
+Your Criteria:
+Min Quantity: 2
+
+Result: ❌ NO MATCH → Will skip
+Reason: Quantity (1) ≤ threshold (2)
+```
+
+**Scenario 3 - Already Contacted:**
+```
+Product: "Ivermectin Bulk Order" by "ABC Pharma"
+(All criteria match)
+
+But: Contacted this exact product 5 days ago
+
+Result: ⏭️ SKIP → Already contacted
+```
+
+---
+
+## 🎛️ Sidebar Dashboard Guide
+
+### Status Section
+
+**Status Indicator:**
+- 🔴 **Stopped** (red dot pulsing) - Not scanning
+- 🟢 **Running** (green dot pulsing) - Actively scanning
+
+**Mode Badge:**
+- 🧪 **Test Mode** (orange gradient) - Logging only, safe
+- 🔴 **Live Mode** (red gradient, blinking) - Auto-clicking enabled
+
+### Control Buttons
+
+- **▶ Start** (green) - Begin/resume scanning
+- **⏸ Stop** (red) - Pause scanning
+
+### Statistics Display
+
+- **Scans**: Total number of page scans completed
+  - Updates every time the page is re-scanned
+  - Example: Scan interval of 30s → increments every 30s
+
+- **Matches**: Products that met ALL criteria
+  - Green highlighted products
+  - Count of potential contacts
+
+- **Contacted**: Products where contact button was clicked
+  - Only increments in **Live Mode**
+  - Purple highlighted products
+
+### Product Details Table
+
+**Columns:**
+- **Time**: When product was scanned
+- **Title**: Product name (truncated, hover to see full)
+- **Country**: Buyer location
+- **Qty**: Quantity extracted
+- **Posted**: How many months ago
+- **Status**: Visual badge showing outcome
+
+**Row Colors:**
+- 🟢 **Green** - Matched all criteria
+  - Badge: "Match" (test mode) or "Would Contact" (test mode)
+- 🟣 **Purple** - Successfully contacted
+  - Badge: "Contacted"
+  - Bold text, stands out
+- 🔴 **Red** - Did not match criteria
+  - Badge: "No Match"
+
+**Table Features:**
+- Shows last **50 products** (newest first)
+- Scrollable with custom scrollbar
+- Sticky header (stays visible while scrolling)
+- Auto-updates every 500ms
+
+### Toggle Sidebar
+
+- Click the **◀** button in header to collapse/expand
+- Collapsed: Only shows toggle button on right edge
+- Useful when you need more screen space
+
+---
+
+## 📥 Exporting Your Data
+
+### Export to CSV
+
+1. **Click the extension icon** (📊)
+2. **Click "📥 Export CSV"** button
+3. **Save the file** (`indiamart_logs.csv`)
+4. **Open in**:
+   - Microsoft Excel
+   - Google Sheets
+   - LibreOffice Calc
+   - Any CSV viewer
+
+### CSV Contents
+
+The exported file includes:
+
+| Column | Description | Example |
+|--------|-------------|---------|
+| Time | When scanned | "2:30:45 PM" |
+| Title | Product name | "Ivermectin Tablets Bulk" |
+| Country | Buyer location | "India" |
+| Posted Date | Original date text | "2 months ago" |
+| Months Ago | Calculated months | "2" |
+| Quantity | Extracted quantity | "500 units" |
+| Buyer | Company/person name | "ABC Pharma Ltd" |
+| Available | Verification text | "Email, Mobile verified" |
+| Engaged | Contact status | "Just contacted" |
+| Matched | Match status | "YES" or "NO" |
+
+### Use Cases for CSV Data
+
+- 📊 **Analyze patterns**: Which products get contacted most
+- 📈 **Track performance**: Conversion rates over time
+- 🔍 **Audit scanning**: Verify the extension worked correctly
+- 📝 **Manual follow-up**: Review contacted companies
+- 📅 **Historical record**: Keep permanent logs
+
+---
+
+## 🔧 Customizing CSS Selectors
+
+**Why would you need this?**
+
+IndiaMArt may update their website design, changing HTML class names. If the extension stops detecting products, you'll need to update the CSS selectors.
+
+### 🔍 How to Find the Correct Selectors
+
+**Step 1: Inspect the Page**
+
+1. Open IndiaMArt with product listings
+2. **Right-click** on a product card → **Inspect** (or press `F12`)
+3. Chrome DevTools opens with HTML highlighted
+
+**Step 2: Identify the Structure**
+
+Look for the **main container** of each product listing:
+
+```html
+<!-- Example IndiaMArt structure (hypothetical) -->
+<div class="buyLeadCard">           ← Main product container
+  <h3 class="leadTitle">Product</h3>      ← Title
+  <span class="leadLocation">India</span> ← Country
+  <span class="leadQty">500 units</span>  ← Quantity
+  <button class="contactBtn">Contact</button> ← Contact button
+</div>
+```
+
+**Step 3: Test Selectors in Console**
+
+In DevTools Console tab, test if your selector works:
+
+```javascript
+// Test main container
+document.querySelectorAll('.buyLeadCard')
+// Should return: NodeList of all product cards
+
+// Test title
+document.querySelector('.buyLeadCard .leadTitle').textContent
+// Should return: Product title text
+```
+
+### 📝 Updating Selectors in Code
+
+Open `content.js` in your extension folder and update these lines:
+
+**Line ~90 - Main Product Listings Container:**
+
+```javascript
+// CURRENT (generic fallback):
+const listings = document.querySelectorAll(
+  '[class*="listing"], [class*="product"], [data-type="listing"], .prd, .bl_item'
+);
+
+// UPDATE TO (if IndiaMArt uses .buyLeadCard):
+const listings = document.querySelectorAll(
+  '.buyLeadCard, .leadCard, [class*="listing"]'
+);
+```
+
+**Lines ~111-116 - Data Extraction Selectors:**
+
+Update the `extractText()` calls in the `scrapedData` object:
+
+```javascript
+// CURRENT:
+const scrapedData = {
+  title: extractText(listing, '[class*="title"], h2, h3, .prd-name, [class*="name"]'),
+  country: extractText(listing, '[class*="country"], [class*="location"], [class*="place"]'),
+  quantity: extractText(listing, '[class*="quantity"], [class*="qty"], [class*="amount"]'),
+  buyer: extractText(listing, '[class*="buyer"], [class*="company"], [class*="seller"]'),
+  available: extractText(listing, '[class*="available"], [class*="verification"], [class*="verified"]'),
+  postedDate: extractText(listing, '[class*="date"], [class*="time"], [class*="posted"], .dt, time')
+};
+
+// UPDATE TO (example with correct classes):
+const scrapedData = {
+  title: extractText(listing, '.leadTitle, h3, [class*="title"]'),
+  country: extractText(listing, '.leadLocation, [class*="country"]'),
+  quantity: extractText(listing, '.leadQty, [class*="quantity"]'),
+  buyer: extractText(listing, '.companyName, [class*="company"]'),
+  available: extractText(listing, '.verificationBadge, [class*="verified"]'),
+  postedDate: extractText(listing, '.postDate, time, [class*="date"]')
+};
+```
+
+**Line ~144 - Contact Button:**
+
+```javascript
+// CURRENT:
+const contactBtn = listing.querySelector(
+  '[class*="contact"], button[class*="btn"], [class*="enquiry"], button'
+);
+
+// UPDATE TO (example):
+const contactBtn = listing.querySelector(
+  '.contactBtn, .enquiryBtn, button[class*="contact"]'
+);
+```
+
+### 📋 Selector Reference Table
+
+| Data Point | File | Line # | Current Selector | What to Look For |
+|------------|------|--------|------------------|------------------|
+| Product Container | content.js | ~90 | `[class*="listing"], .prd` | Main div wrapping each product |
+| Product Title | content.js | ~111 | `[class*="title"], h2, h3` | Heading with product name |
+| Country/Location | content.js | ~112 | `[class*="country"], [class*="location"]` | Span/div with location text |
+| Quantity | content.js | ~113 | `[class*="quantity"], [class*="qty"]` | Text showing amount/units |
+| Buyer/Company | content.js | ~114 | `[class*="buyer"], [class*="company"]` | Company or person name |
+| Verification | content.js | ~115 | `[class*="available"], [class*="verification"]` | Email/Mobile/WhatsApp badges |
+| Posted Date | content.js | ~116 | `[class*="date"], [class*="posted"]` | Date/time element |
+| Contact Button | content.js | ~144 | `[class*="contact"], button` | Clickable contact/enquiry button |
+
+### ✅ After Updating
+
+1. **Reload the extension**: 
+   - Go to `chrome://extensions/`
+   - Click the refresh icon on your extension
+2. **Refresh the IndiaMArt page**
+3. **Check Console** (F12) for "Found X listings to process"
+4. **Verify sidebar** shows products in the table
+
+---
+
+## 🐛 Troubleshooting Guide
+
+### ❌ "No listings found on this page"
+
+**Problem**: Console shows "No listings found" but you can see products
+
+**Solutions**:
+
+1. **Update selectors** (see [Customizing Selectors](#customizing-css-selectors))
+2. **Check if you're on the right page**:
+   - Extension works on buy leads / product listing pages
+   - May not work on homepage or company profiles
+3. **Refresh the page** after updating selectors
+4. **Test in Console**:
+   ```javascript
+   document.querySelectorAll('[class*="listing"]').length
+   // Should return number > 0
+   ```
+
+### 🔇 Sidebar Not Appearing
+
+**Problem**: No sidebar visible on IndiaMArt pages
+
+**Solutions**:
+
+1. **Refresh the page** (`Ctrl+R` or `F5`)
+2. **Check URL**: Make sure you're on `*.indiamart.com`
+3. **Check extension is enabled**: `chrome://extensions/` → Extension should be ON
+4. **Reload extension**:
+   - `chrome://extensions/`
+   - Click refresh icon on extension card
+   - Refresh IndiaMArt page
+5. **Check Console for errors**: Press `F12` → Console tab
+6. **Verify `sidebar.js` loaded**: Console should show "IndiaMArt Auto Contact Content Script Loaded"
+
+### 🧪 Test Mode Not Clicking (Expected Behavior)
+
+**Problem**: Says "Would click contact button" but nothing happens
+
+**Solution**: **This is correct!** Test mode is designed to NOT click buttons.
+
+- Test mode **only logs** what would happen
+- To enable clicking: **Uncheck** "Test Mode" in popup → Save
+- Mode badge will change to 🔴 **Live Mode**
+
+### 🔄 Extension Not Auto-Resuming
+
+**Problem**: Closed Chrome, reopened, but scanning didn't auto-resume
+
+**Check**:
+
+1. **Was scanning running** when you closed Chrome?
+   - If you clicked "Stop" before closing, it won't auto-resume
+2. **Did you open an IndiaMArt page**?
+   - Extension only resumes on IndiaMArt pages
+3. **Wait 1.5 seconds** after page loads
+   - Auto-resume has a built-in delay
+4. **Check storage**:
+   ```javascript
+   // In Console:
+   chrome.storage.local.get(['isRunning'], console.log)
+   // Should show: {isRunning: true}
+   ```
+
+### 🔁 Already Contacted Products Still Showing
+
+**Problem**: Products marked as "Already contacted" appear again
+
+**Understanding**:
+
+- Extension **does skip** already contacted products (check console logs)
+- They **appear in table** for history/record keeping
+- They show "⏭ SKIPPED - Already contacted" in console
+
+**If truly being re-contacted**:
+
+1. **Check button state**: Extension checks if button is disabled
+2. **Clear contacted history**:
+   - Extension popup → "🗑️ Clear Logs"
+   - This resets the 30-day tracking
+3. **Verify Product ID** in console - should be identical for same product
+
+### 📊 Statistics Not Updating
+
+**Problem**: Scan count / match count frozen
+
+**Solutions**:
+
+1. **Check if scanning is running**: Status should show "Running" with green dot
+2. **Refresh the sidebar**: Toggle collapse/expand
+3. **Reload the page**: Sometimes helps reset state
+4. **Check Console for errors**: May show JavaScript errors blocking updates
+
+### 🚫 Buttons Being Clicked When Shouldn't
+
+**Problem**: Extension clicking buttons that don't match criteria
+
+**Debug Steps**:
+
+1. **Enable Test Mode** immediately
+2. **Check Console logs** for that specific product:
+   - Look for "FULL MATCH!" or "NO MATCH"
+   - Review each criterion: Medicine, Quantity, Country, etc.
+3. **Verify your criteria**:
+   - Extension popup → review all settings
+   - Check for typos in medicine names
+4. **Check for false positives**:
+   - Medicine name too generic? (e.g., "tab" matches "tablets")
+   - Use more specific names
+
+### 💾 Data Loss After Chrome Restart
+
+**Problem**: Logs/criteria disappeared after restarting Chrome
+
+**This shouldn't happen**. If it does:
+
+1. **Check if extension was disabled**:
+   - `chrome://extensions/` → Make sure extension is ON
+2. **Check Chrome's storage isn't cleared**:
+   - Settings → Privacy → Clear browsing data
+   - Make sure "Site settings" isn't cleared
+3. **Reinstall extension** if persistent
+4. **Export CSV regularly** as backup
+
+### 🐌 Extension Running Slow / Page Lagging
+
+**Problem**: IndiaMArt page becomes slow or unresponsive
+
+**Solutions**:
+
+1. **Increase scan interval**:
+   - Extension popup → Set to 30s or 1m instead of 5s
+   - Reduces CPU usage
+2. **Clear old logs**:
+   - Extension popup → "🗑️ Clear Logs"
+   - Keeps only fresh data
+3. **Check listings count**:
+   - If page has 100+ products, processing takes time
+   - Consider filtering at source (use IndiaMArt's own filters)
+4. **Close other tabs**: Free up browser resources
+
+---
+
+## ⚙️ Configuration Reference
+
+### Complete Settings Breakdown
+
+#### 🎯 Medicines Field
+
+- **Type**: Text input (comma-separated)
+- **Default**: Empty
+- **Format**: `Medicine1, Medicine2, Medicine3`
+- **Case**: Insensitive (IVERmectin = ivermectin)
+- **Matching**: Partial match (Ivermectin matches "Ivermectin Tablets 500mg")
+- **Examples**:
+  - `Ivermectin` - matches any product with "ivermectin" in title
+  - `Ivermectin, Azithromycin, Doxycycline` - matches ANY of these
+  - Empty = matches all products (not recommended)
+
+#### 📊 Minimum Quantity
+
+- **Type**: Number input
+- **Default**: 2
+- **Range**: 1 to unlimited
+- **Logic**: Product quantity must be **greater than** this value (not equal)
+- **Extraction**: Takes first number found in quantity field
+- **Examples**:
+  - Set to `5` → "10 units" passes ✓, "3 units" fails ✗
+  - "500-1000 units" → extracts 500
+
+#### 📅 Posted Within
+
+- **Type**: Dropdown select
+- **Default**: Last 3 months
+- **Options**: 1, 2, 3, 6, 12, 24 months, Any time
+- **Logic**: Product posted date ≤ selected months ago
+- **Handles**:
+  - "2 months ago" format
+  - "Jan 15, 2024" format
+  - "15-01-2024" format
+- **Unknown dates**: Treated as valid (benefit of doubt)
+
+#### 🌍 Country Filter
+
+- **Type**: Text input (comma-separated)
+- **Default**: Empty (all countries)
+- **Format**: `India, USA, UK`
+- **Case**: Insensitive
+- **Matching**: Partial (India matches "India" or "Indian")
+- **Empty behavior**: Accepts ALL countries
+
+#### ✅ Verification Checkboxes
+
+- **Email Verified**: Checks if "email" appears in verification text
+- **Mobile Verified**: Checks if "mobile" or "phone" appears
+- **WhatsApp Verified**: Checks if "whatsapp" or "wa" appears
+- **Logic**: ALL checked boxes must pass
+- **Example**: If Email ✓ and Mobile ✓ are checked, product must have BOTH
+
+#### ⏱️ Scan Interval
+
+- **Type**: Number + Unit selector
+- **Units**: Milliseconds (ms), Seconds (s), Minutes (m)
+- **Default**: 5 seconds
+- **Range**: 1ms to unlimited
+- **Recommendations**:
+  - **Fast** (1-5s): High activity, CPU intensive
+  - **Moderate** (10-30s): Balanced for most users
+  - **Slow** (1-5m): Background monitoring, low CPU
+- **How it works**: Page rescans every X time units
+
+#### 🧪 Test Mode
+
+- **Type**: Checkbox
+- **Default**: Checked (ON)
+- **When ON**: Logs actions but doesn't click buttons
+- **When OFF**: Actually clicks contact buttons (LIVE MODE)
+- **Recommendation**: Always test with this ON first!
+
+---
+
+## 📂 Extension File Structure
+
+```
+indiamart-auto-contact/
+│
+├── manifest.json              # Extension configuration
+│   ├── Name, version, permissions
+│   ├── Defines which scripts load where
+│   └── Specifies IndiaMArt URL patterns
+│
+├── background.js              # Service worker (always running)
+│   ├── Manages extension state (isRunning, criteria)
+│   ├── Handles auto-resume after Chrome restart
+│   ├── Monitors tab updates
+│   ├── Cleans old contacted products (30-day window)
+│   └── Keeps service worker alive
+│
+├── popup.html                 # Extension popup UI (click icon to see)
+│   ├── Form inputs for criteria
+│   ├── Save/Export/Clear buttons
+│   └── Visual styling
+│
+├── popup.js                   # Popup logic
+│   ├── Load/save criteria from storage
+│   ├── Form validation
+│   ├── CSV export function
+│   └── Clear logs function
+│
+├── content.js                 # Main scanning engine (runs on IndiaMArt pages)
+│   ├── Product detection and scraping
+│   ├── Matching logic (filters)
+│   ├── Duplicate prevention
+│   ├── Contact button clicking
+│   ├── Logging and storage
+│   └── Auto-resume handling
+│
+├── sidebar.js                 # Sidebar UI (visible on IndiaMArt)
+│   ├── Real-time dashboard
+│   ├── Statistics display
+│   ├── Product table
+│   ├── Start/Stop controls
+│   └── Auto-updates every 500ms
+│
+├── icons/                     # Extension icons
+│   ├── icon16.png            # Toolbar icon (small)
+│   ├── icon48.png            # Extension management (medium)
+│   └── icon128.png           # Chrome Web Store (large)
+│
+└── README.md                  # This file
+```
+
+### How Files Interact
+
+```
+User clicks extension icon
+    ↓
+popup.html opens
+    ↓
+popup.js loads criteria from Chrome storage
+    ↓
+User fills form and clicks "Save"
+    ↓
+popup.js saves to Chrome storage
+    ↓
+background.js monitors storage changes
+    ↓
+User opens IndiaMArt page
+    ↓
+content.js automatically injects
+    ↓
+sidebar.js creates UI on page
+    ↓
+User clicks "Start" in sidebar
+    ↓
+content.js retrieves criteria from storage
+    ↓
+setInterval() begins scanning loop
+    ↓
+For each product:
+    - Scrape data with CSS selectors
+    - Check against criteria
+    - Log to storage
+    - Click button if match (live mode)
+    ↓
+sidebar.js reads storage every 500ms
+    ↓
+Updates dashboard in real-time
+    ↓
+User can export CSV via popup.js
+```
+
+---
+
+## 💾 Data Storage & Privacy
+
+### What Gets Stored (Chrome Local Storage)
+
+```javascript
+{
+  criteria: {                    // Your filter settings
+    medicines: ['ivermectin', 'azithromycin'],
+    minQuantity: 2,
+    monthsBefore: 3,
+    countries: ['india', 'usa'],
+    verifyEmail: true,
+    verifyMobile: true,
+    verifyWhatsapp: false,
+    interval: 5000,
+    testMode: true
+  },
   
-- **Fast Monitoring** (1-3 seconds):
-  - Use when: Active product feed with regular updates
-  - Pros: Good balance of speed and performance
-  - Cons: Moderate CPU usage
-  - **Recommended for most users**
+  isRunning: true,               // Current scanning state
+  
+  scanCount: 42,                 // Total scans performed
+  
+  logs: [                        // Last 500 product scans
+    {
+      time: "2:30:45 PM",
+      timestamp: 1704567045000,
+      title: "Ivermectin Tablets",
+      country: "India",
+      quantity: "500 units",
+      buyer: "ABC Pharma",
+      matched: true,
+      engaged: "Just contacted",
+      productId: "ivermectintablets_abcpharma",
+      // ... more fields
+    },
+    // ... up to 500 entries
+  ],
+  
+  contactedProducts: {           // Prevent duplicates (30-day history)
+    "ivermectintablets_abcpharma": {
+      timestamp: 1704567045000,
+      date: "2024-01-06T09:30:45.000Z"
+    },
+    // ... more products
+  },
+  
+  lastScan: 1704567045000,       // Timestamp of last scan
+  nextScan: 1704567050000        // Timestamp of next scheduled scan
+}
+```
 
-- **Normal Monitoring** (5-15 seconds):
-  - Use when: Checking established listings periodically
-  - Pros: Low CPU usage, natural browsing pattern
-  - Cons: May miss very fast-moving leads
+### Storage Limits
 
-- **Slow Monitoring** (1-5 minutes):
-  - Use when: Periodic checks throughout the day
-  - Pros: Minimal CPU usage
-  - Cons: Only suitable for stable/slow-moving markets
+- **Chrome Local Storage**: 10 MB per extension
+- **Logs**: Capped at 500 entries (auto-deletes oldest)
+- **Contacted Products**: Cleaned every 24 hours (removes entries > 30 days old)
+- **Criteria**: No limit (typically < 1 KB)
 
-**Tips:**
-- Start with 5-10 seconds and adjust based on results
-- Lower intervals = faster detection but more resource intensive
-- Higher intervals = battery friendly but slower detection
-- The extension shows "Time until next scan" so you can monitor timing
+### Privacy Guarantees
 
-### Verification Options
+✅ **All data stays on your computer**
+- No external servers
+- No data transmission
+- No cloud sync
+- No analytics or tracking
 
-- **Email**: Product shows email verification
-- **Mobile**: Product shows mobile verification  
-- **WhatsApp**: Product shows WhatsApp verification
-- Check only the verifications that are important to you
+✅ **What we DON'T collect**:
+- Personal information
+- Browsing history (outside IndiaMArt)
+- Contact information from products
+- Usage statistics
 
-## Tips
-
-1. **🧪 ALWAYS Start with Test Mode**: Never enable live mode until you've verified scraping works
-2. **Check Console Logs**: Press F12 to see exactly what data is being extracted
-3. **Verify Selectors**: If no data is showing, IndiaMArt's HTML might have changed - check console for empty fields
-4. **Start with Specific Criteria**: Use specific medicine names to reduce false matches
-5. **Monitor First**: Run in test mode for 10-15 minutes to see how matches look
-6. **Adjust Quantity**: Set realistic minimum quantity to avoid spam leads
-7. **Choose Right Interval**: 
-   - For new product feeds: 1-5 seconds
-   - For periodic monitoring: 30-60 seconds
-   - For background monitoring: 2-5 minutes
-8. **Watch Scan Counter**: The "Total scans completed" shows how active the extension is
-9. **Scrape Details**: Check the "📋 Scraped Data" section in logs to verify field extraction
-10. **Use Multiple Tabs**: You can run the extension on multiple IndiaMArt tabs simultaneously
-11. **Regular Exports**: Export CSV logs regularly to track your contacts and analyze patterns
-12. **Test Different Pages**: Try the extension on different IndiaMArt search result pages to ensure compatibility
-
-## Troubleshooting
-
-**Extension not working?**
-- Make sure you're on an IndiaMArt page
-- Check that criteria are saved
-- Verify Test Mode is enabled initially
-- Try refreshing the page and restarting the extension
-
-**No products detected?**
-- Open console (F12) and check for errors
-- IndiaMArt's HTML structure may have changed
-- Check if "Found X listings to process" appears in console
-- The selectors in `content.js` may need updating
-
-**Fields showing "Not found" in scraped data?**
-- IndiaMArt changed their HTML class names
-- Open DevTools, inspect a product element
-- Update the selectors in `content.js` `extractText()` calls
-- Common selectors to check:
-  ```javascript
-  Title: '[class*="title"], h2, h3, .prd-name, [class*="name"]'
-  Country: '[class*="country"], [class*="location"], [class*="place"]'
-  Quantity: '[class*="quantity"], [class*="qty"], [class*="amount"]'
-  Buyer: '[class*="buyer"], [class*="company"], [class*="seller"]'
-  Available: '[class*="available"], [class*="verification"], [class*="verified"]'
-  Button: '[class*="contact"], button[class*="btn"], [class*="enquiry"]'
-  ```
-
-**Too many false positives?**
-- Make medicine names more specific
-- Increase minimum quantity requirement
-- Enable more verification requirements
-- Check console to see why products are matching
-
-**Buttons not clicking in Live Mode?**
-- Verify button selector is correct (check console: "Contact Button: ✓ Found")
-- Check if button is disabled or hidden
-- Try adjusting the click delay in `content.js` (currently 500ms)
-- Some buttons may require different interaction methods
-
-## Privacy & Safety
-
-- This extension only works on IndiaMArt.com
-- All data is stored locally in your browser
-- No data is sent to external servers
-- Use responsibly and follow IndiaMArt's terms of service
-
-## Technical Details
-
-- **Manifest Version**: 3
-- **Permissions**: storage, activeTab, alarms, scripting
-- **Content Script**: Runs on all IndiaMArt pages
-- **Storage**: Chrome local storage for criteria and logs
-
-## Support
-
-For issues, feature requests, or questions, please check:
-- Browser console for error messages
-- Extension popup for status information
-- Chrome extensions page for permission issues
+✅ **Data you can delete**:
+- Extension popup → "🗑️ Clear Logs" (clears logs + contacted history)
+- `chrome://extensions/` → Remove extension (deletes ALL data)
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: January 2026  
-**Compatible**: Chrome 88+
+## 🔒 Security Considerations
+
+### Permissions Required
+
+The extension requests these Chrome permissions:
+
+```json
+{
+  "permissions": [
+    "storage",          // Save criteria and logs
+    "activeTab",        // Access current tab content
+    "scripting"         // Inject sidebar on IndiaMArt pages
+  ],
+  "host_permissions": [
+    "*://*.indiamart.com/*"  // Only works on IndiaMArt
+  ]
+}
+```
+
+### What Extension Can Do
+
+✅ **Allowed**:
+- Read IndiaMArt page content
+- Click buttons on IndiaMArt
+- Store data locally
+- Inject sidebar UI
+
+❌ **Cannot**:
+- Access other websites
+- Access your Google account
+- Read emails or personal data
+- Modify data outside IndiaMArt
+- Send data to external servers
+
+### Safe Usage
+
+- ✅ Only download from trusted sources (official repo or Chrome Web Store)
+- ✅ Review code before installing (it's open source!)
+- ✅ Start with Test Mode to verify behavior
+- ✅ Use reasonable scan intervals (avoid 1-2 second intervals for extended periods)
+
+---
+
+## ⚖️ Legal & Ethical Usage
+
+### Terms of Service Compliance
+
+**Important**: You are responsible for ensuring your use of this extension complies with IndiaMArt's Terms of Service.
+
+**Recommendations**:
+- ✅ Use **reasonable scan intervals** (30+ seconds)
+- ✅ Don't spam contact buttons
+- ✅ Respect rate limits
+- ✅ Use for legitimate business purposes
+- ❌ Don't scrape data for resale
+- ❌ Don't harass buyers with repeated contacts
+
+### Best Practices
+
+1. **Start with Test Mode** - Verify filtering works correctly
+2. **Use conservative intervals** - 30-60 seconds is reasonable
+3. **Monitor results** - Check that you're contacting appropriate leads
+4. **Don't run 24/7** - Give the platform (and yourself) breaks
+5. **Clear old logs** - Maintain data hygiene
+6. **Export data periodically** - Keep offline backups
+
+### Disclaimer
+
+⚠️ **This extension is provided as-is for personal/business use.**
+
+- The developers are **NOT responsible** for:
+  - Account suspensions or bans
+  - Terms of Service violations
+  - Missed business opportunities
+  - Data loss or corruption
+  - Any damages arising from use
+
+- Users **ARE responsible** for:
+  - Complying with IndiaMArt's ToS
+  - Using the extension ethically
+  - Verifying that automation is permitted on their account
+  - Any consequences of misuse
+
+**Use at your own risk.**
+
+---
+
+## 🎓 Tips & Best Practices
+
+### Getting Started
+
+1. **First Week - Test Mode Only**
+   - Run in test mode for at least 3-7 days
+   - Review console logs daily
+   - Verify filtering is accurate
+   - Adjust criteria as needed
+
+2. **Monitor Match Quality**
+   - Are matched products actually relevant?
+   - Too many matches? Tighten criteria (higher quantity, specific countries)
+   - Too few matches? Loosen criteria (remove country filter, lower quantity)
+
+3. **Optimize Scan Interval**
+   - Fast listings turnover? Use 10-30 seconds
+   - Slow listings? Use 1-5 minutes
+   - Balance between responsiveness and resource usage
+
+### Advanced Usage
+
+**Multiple Medicine Lists (Workaround)**
+
+Since extension supports one criteria set, you can:
+1. Save criteria for Medicine Set A
+2. Run scanning for a while
+3. Update criteria to Medicine Set B
+4. Continue scanning
+
+*Future versions may support profiles*
+
+**Combining with Manual Review**
+
+1. Set **Test Mode ON**
+2. Let extension identify matches
+3. Review sidebar table
+4. Manually click contact buttons for best prospects
+5. Extension still prevents duplicates!
+
+**Time-Based Scanning**
+
+1. **Morning** (9 AM - 12 PM): Fast interval (10-20s) - high activity
+2. **Afternoon** (12 PM - 5 PM): Moderate (30-60s)
+3. **Evening** (5 PM - 9 PM): Slow (2-5m) - background monitoring
+4. **Night**: Stop scanning (let the server rest!)
+
+### Troubleshooting Workflow
+
+```
+Problem detected
+    ↓
+Enable Test Mode (if not already)
+    ↓
+Open Console (F12)
+    ↓
+Trigger one scan
+    ↓
+Review logs for that scan:
+    - Was product detected? → Check listing selector
+    - Was data scraped? → Check field selectors
+    - Did it match? → Review criteria logic
+    - Should it match? → Adjust criteria
+    ↓
+Make necessary changes
+    ↓
+Reload extension
+    ↓
+Test again
+```
+
+---
+
+## 📊 Common Use Cases
+
+### Use Case 1: Bulk Medicine Supplier
+
+**Goal**: Find bulk orders for specific medicines
+
+**Configuration**:
+```
+Medicines: Ivermectin, Azithromycin, Doxycycline
+Min Quantity: 100
+Posted Within: 1 month
+Countries: (empty - all countries)
+Verifications: Email ✓, Mobile ✓
+Interval: 30 seconds
+Test Mode: OFF (after testing)
+```
+
+**Result**: Automatically contacts bulk buyers of these medicines
+
+---
+
+### Use Case 2: Regional Distributor
+
+**Goal**: Find Indian buyers only for various medicines
+
+**Configuration**:
+```
+Medicines: Paracetamol, Ibuprofen, Amoxicillin
+Min Quantity: 10
+Posted Within: 2 months
+Countries: India
+Verifications: Email ✓, Mobile ✓, WhatsApp ✓
+Interval: 1 minute
+Test Mode: OFF
+```
+
+**Result**: Contacts only verified Indian buyers
+
+---
+
+### Use Case 3: Research/Monitoring
+
+**Goal**: Monitor market activity without contacting
+
+**Configuration**:
+```
+Medicines: (all medicines you track)
+Min Quantity: 1
+Posted Within: Any time
+Countries: (empty)
+Verifications: (none required)
+Interval: 5 minutes
+Test Mode: ON (keep permanently)
+```
+
+**Result**: Logs all activity, export CSV for analysis
+
+---
+
+## 🆘 Getting Help
+
+### Self-Service Troubleshooting
+
+1. **Check this README** - Most answers are here
+2. **Check Console logs** - F12 → Console tab shows detailed info
+3. **Test selectors** - Use DevTools to verify CSS selectors work
+4. **Clear and restart** - Clear logs, reload extension, refresh page
+5. **Reinstall** - Last resort: remove and reinstall extension
+
+### Reporting Issues
+
+If you find a bug or need help:
+
+1. **Gather information**:
+   - Extension version
+   - Chrome version (`chrome://version/`)
+   - Screenshot of issue
+   - Console logs (if relevant)
+   - Steps to reproduce
+
+2. **Check existing issues** (GitHub/support channel)
+3. **Create new issue** with all gathered info
+
+### Feature Requests
+
+Have an idea? Suggest features like:
+- Multiple criteria profiles
+- Scheduled scanning
+- Email notifications
+- Advanced filters
+- Custom templates
+
+---
+
+## 🔄 Version History
+
+### v1.0.0 (Current Release)
+
+**Features**:
+- ✅ Smart filtering by medicine, quantity, country, date
+- ✅ Background scanning (works in inactive tabs)
+- ✅ Auto-resume after Chrome restart
+- ✅ Test mode for safe verification
+- ✅ Duplicate prevention (30-day tracking)
+- ✅ Real-time sidebar dashboard
+- ✅ CSV export functionality
+- ✅ Detailed console logging
+- ✅ Product highlighting
+- ✅ Toast notifications
+
+**Known Limitations**:
+- Single criteria set (no profiles)
+- Generic CSS selectors (may need customization)
+- No scheduled scanning (time-based)
+- No remote notifications
+
+---
+
+## 🚀 Future Roadmap
+
+**Planned Features** (subject to change):
+
+### v1.1.0
+- [ ] Multiple criteria profiles (save/switch between sets)
+- [ ] Improved selector auto-detection
+- [ ] Better date parsing
+- [ ] Statistics dashboard in popup
+
+### v1.2.0
+- [ ] Schedule-based scanning (start/stop at specific times)
+- [ ] Daily/weekly summary reports
+- [ ] Export to Excel format
+- [ ] Import criteria from CSV
+
+### v2.0.0
+- [ ] Email/SMS notifications for matches
+- [ ] Custom message templates
+- [ ] Integration with CRM systems
+- [ ] Advanced analytics and insights
+
+---
+
+## 🤝 Contributing
+
+**Want to improve this extension?**
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make changes**: Update code, test thoroughly
+4. **Commit**: `git commit -m 'Add amazing feature'`
+5. **Push**: `git push origin feature/amazing-feature`
+6. **Open Pull Request**: Describe changes clearly
+
+### Development Setup
+
+```bash
+
+# Load in Chrome
+1. Open chrome://extensions/
+2. Enable Developer Mode
+3. Click "Load unpacked"
+4. Select project folder
+
+# Make changes
+# Edit files in your code editor
+
+# Test changes
+# Reload extension in chrome://extensions/
+# Refresh IndiaMArt page
+# Verify functionality
+```
+
+### Code Guidelines
+
+- Use clear, descriptive variable names
+- Comment complex logic
+- Follow existing code style
+- Test in Test Mode first
+- Don't break backward compatibility
+
+---
+
+## 📞 Support & Community
+
+### Resources
+
+- 📖 **Documentation**: This README
+- 💻 **Source Code**: GitHub repository (if applicable)
+- 🐛 **Bug Reports**: GitHub Issues
+- 💡 **Feature Requests**: GitHub Discussions
+
+### Contact
+
+- **Technical Support**: Open an issue on GitHub
+- **General Questions**: Check FAQ in this README
+- **Security Issues**: Report privately (security@yourdomain.com)
+
+---
+
+## 🎯 Quick Reference Card
+
+**Keyboard Shortcuts:**
+- `F12` - Open DevTools / Console
+- `Ctrl+R` - Refresh page
+- `Ctrl+Shift+I` - Open DevTools (alternative)
+
+**Important URLs:**
+- `chrome://extensions/` - Manage extensions
+- IndiaMArt buy leads page - Where to use extension
+
+**Key Concepts:**
+- **Test Mode**: Logs only, no clicking
+- **Live Mode**: Auto-clicks contact buttons
+- **Product ID**: Unique identifier = title + buyer name
+- **Scan Interval**: How often page is rescanned
+- **Contacted Products**: 30-day tracking to prevent duplicates
+
+**Troubleshooting Checklist:**
+- [ ] Extension enabled in chrome://extensions/
+- [ ] On IndiaMArt page with listings
+- [ ] Criteria saved in popup
+- [ ] Sidebar visible (toggle if needed)
+- [ ] Scanning started (green "Running" status)
+- [ ] Console open (F12) to see logs
+- [ ] Selectors match current HTML (if no products found)
+
+---
+
+## 📝 License
+
+This project is provided **as-is** for personal and business use.
+
+**You are free to**:
+- ✅ Use for personal business
+- ✅ Modify for your needs
+- ✅ Share with others
+
+**Conditions**:
+- ⚖️ Use responsibly and ethically
+- ⚖️ Comply with IndiaMArt's Terms of Service
+- ⚖️ No warranty or liability from developers
+- ⚖️ Credit original authors (if redistributing)
+
+---
+
+## 🙏 Acknowledgments
+
+Built for **IndiaMArt sellers** to streamline lead generation.
+
+**Technologies Used**:
+- Chrome Extension APIs
+- Vanilla JavaScript
+- CSS3 for UI
+- Chrome Local Storage
+
+**Inspiration**: Helping small businesses automate repetitive tasks
+
+---
+
+## 📢 Final Notes
+
+### Remember
+
+1. **Always start with Test Mode** - Verify before going live
+2. **Use responsibly** - Respect IndiaMArt's platform and users
+3. **Monitor results** - Check that matches are relevant
+4. **Export data regularly** - Keep backups of your logs
+5. **Update selectors as needed** - IndiaMArt may change their HTML
+
+### Thank You!
+
+Thank you for using **IndiaMArt Auto Contact Extension**!
+
+We hope it helps you:
+- ✅ Save time on repetitive tasks
+- ✅ Find quality leads faster
+- ✅ Grow your business
+- ✅ Focus on what matters - closing deals!
+
+---
+
+**Happy Selling! 🚀**
+
+---
+
+*Last Updated: January 2026*
+*Version: 1.0.0*
+*For support: See [Support & Community](#support--community) section*
+
+---
+
+## 📋 Appendix: Selector Examples
+
+### Real IndiaMArt Selector Examples (Hypothetical)
+
+**If IndiaMArt uses these classes (inspect to verify)**:
+
+```javascript
+// Main container
+'.bl_item'                     // Buy lead item
+'.buyLead'                     // Buy lead card
+'[data-type="buylead"]'        // Data attribute
+
+// Title
+'.bl-title'                    // Buy lead title
+'.buyLead-title'               // Alternative
+'h2.title'                     // H2 heading
+
+// Location/Country
+'.bl-location'                 // Location text
+'.buyLead-country'             // Country specific
+'.location-badge'              // Badge style
+
+// Quantity
+'.bl-quantity'                 // Quantity field
+'.qty-value'                   // Quantity value
+'[data-qty]'                   // Data attribute
+
+// Company/Buyer
+'.bl-company'                  // Company name
+'.buyer-name'                  // Buyer name
+'.companyName'                 // Alternative
+
+// Date
+'.bl-date'                     // Posted date
+'time.posted-date'             // Time element
+'.date-posted'                 // Alternative
+
+// Contact Button
+'.contact-btn'                 // Contact button
+'button.bl-contact'            // Button element
+'.enquiry-btn'                 // Enquiry button
+```
+
+**Update these in `content.js` based on actual IndiaMArt HTML structure!**
+
+---
+
+**END OF README**

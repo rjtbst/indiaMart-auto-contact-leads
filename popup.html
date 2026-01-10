@@ -206,9 +206,11 @@
       font-size: 10px;
       margin-top: 4px;
     }
+    
     #intervalValue{
-        width: 70px;
+      width: 70px;
     }
+    
     .info-box {
       background: #e3f2fd;
       border-left: 4px solid #2196F3;
@@ -239,7 +241,7 @@
       <div class="section-title">🎯 Filters</div>
       
       <div class="input-group">
-        <label>Medicines (comma separated)</label>
+        <label>Products (comma separated)</label>
         <input type="text" id="medicines" placeholder="Ivermectin, Azithromycin, Pregabalin...">
       </div>
       
@@ -247,6 +249,26 @@
         <label>Minimum Quantity</label>
         <input type="number" id="minQuantity" value="2" min="1">
         <small>Products must have quantity greater than this</small>
+      </div>
+
+      <div class="input-group">
+        <label>Minimum User Age (Months)</label>
+        <select id="monthsBefore">
+          <option value="1">At least 1 month old</option>
+          <option value="2" selected>At least 2 months old</option>
+          <option value="3">At least 3 months old</option>
+          <option value="6">At least 6 months old</option>
+          <option value="12">At least 12 months old</option>
+          <option value="24">At least 24 months old</option>
+          <option value="0">Any age (no filter)</option>
+        </select>
+        <small>Only contact buyers whose account is this old or older</small>
+      </div>
+
+      <div class="input-group">
+        <label>Country Filter</label>
+        <input type="text" id="countries" placeholder="India, USA, UK... (leave empty for all)">
+        <small>Only contact buyers from these countries (comma separated)</small>
       </div>
     </div>
 
