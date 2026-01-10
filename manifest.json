@@ -16,7 +16,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.indiamart.com/*"],
+      "matches": ["https://seller.indiamart.com/bltxn/?pref=*"],
       "js": ["content.js", "sidebar.js"],
       "run_at": "document_idle"
     }

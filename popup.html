@@ -243,12 +243,7 @@
       <div class="input-group">
         <label>Products (comma separated)</label>
         <input type="text" id="medicines" placeholder="Ivermectin, Azithromycin, Pregabalin...">
-      </div>
-      
-      <div class="input-group">
-        <label>Minimum Quantity</label>
-        <input type="number" id="minQuantity" value="2" min="1">
-        <small>Products must have quantity greater than this</small>
+        <small>Leave empty to match all products</small>
       </div>
 
       <div class="input-group">
@@ -273,22 +268,19 @@
     </div>
 
     <div class="section">
-      <div class="section-title">✅ Verification</div>
+      <div class="section-title">✅ Verification Required</div>
       
       <div class="checkbox-group">
         <label class="checkbox-label">
           <input type="checkbox" id="verifyEmail" checked>
-          Email
+          Email Verified
         </label>
         <label class="checkbox-label">
           <input type="checkbox" id="verifyMobile" checked>
-          Mobile
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" id="verifyWhatsapp">
-          WhatsApp
+          Mobile Verified
         </label>
       </div>
+      <small>Only contact buyers with these verifications</small>
     </div>
 
     <div class="section">

@@ -18,12 +18,10 @@ document.getElementById('saveCriteria').addEventListener('click', () => {
   
   const criteria = {
     medicines: document.getElementById('medicines').value.split(',').map(m => m.trim().toLowerCase()).filter(m => m),
-    minQuantity: parseInt(document.getElementById('minQuantity').value),
     monthsBefore: parseInt(document.getElementById('monthsBefore').value),
     countries: document.getElementById('countries').value.split(',').map(c => c.trim().toLowerCase()).filter(c => c),
     verifyEmail: document.getElementById('verifyEmail').checked,
     verifyMobile: document.getElementById('verifyMobile').checked,
-    verifyWhatsapp: document.getElementById('verifyWhatsapp').checked,
     interval: intervalMs,
     intervalDisplay: {
       value: intervalValue,
@@ -48,12 +46,10 @@ function loadCriteria() {
   chrome.storage.local.get(['criteria'], (result) => {
     if (result.criteria) {
       document.getElementById('medicines').value = result.criteria.medicines.join(', ');
-      document.getElementById('minQuantity').value = result.criteria.minQuantity;
       document.getElementById('monthsBefore').value = result.criteria.monthsBefore || 2;
       document.getElementById('countries').value = result.criteria.countries ? result.criteria.countries.join(', ') : '';
       document.getElementById('verifyEmail').checked = result.criteria.verifyEmail;
       document.getElementById('verifyMobile').checked = result.criteria.verifyMobile;
-      document.getElementById('verifyWhatsapp').checked = result.criteria.verifyWhatsapp;
       document.getElementById('testMode').checked = result.criteria.testMode !== false;
       
       if (result.criteria.intervalDisplay) {
@@ -105,20 +101,24 @@ function formatInterval(ms) {
 }
 
 function convertToCSV(logs) {
-  const headers = ['Time', 'Title', 'Quantity', 'User Months Old', 'Country', 'Buyer', 'Email', 'Phone', 'WhatsApp', 'Engaged', 'Matched'];
-  const rows = logs.map(log => [
-    log.time,
-    log.title,
-    log.quantity,
-    log.userMonthsOld || 'N/A',
-    log.country || 'N/A',
-    log.buyer || 'N/A',
-    log.verifiedEmail || 'N/A',
-    log.verifiedPhone || 'N/A',
-    log.verifiedWhatsapp || 'N/A',
-    log.engaged || '',
-    log.matched ? 'YES' : 'NO'
-  ]);
+  const headers = ['Time', 'Title', 'User Months Old', 'Country', 'Buyer', 'Email', 'Phone', 'Engaged', 'Matched', 'Title Match', 'Age Match', 'Country Match'];
+  const rows = logs.map(log => {
+    const matchResults = log.matchResults || {};
+    return [
+      log.time,
+      log.title,
+      log.userMonthsOld || 'N/A',
+      log.country || 'N/A',
+      log.buyer || 'N/A',
+      log.verifiedEmail || 'N/A',
+      log.verifiedPhone || 'N/A',
+      log.engaged || '',
+      log.matched ? 'YES' : 'NO',
+      matchResults.medicine ? 'YES' : 'NO',
+      matchResults.monthsOld ? 'YES' : 'NO',
+      matchResults.country ? 'YES' : 'NO'
+    ];
+  });
   
   const csvContent = [
     headers.join(','),
