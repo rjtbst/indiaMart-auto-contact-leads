@@ -1,5 +1,5 @@
 // =============================================================================
-// CONTENT.JS - Main Scanning Logic with Fixed Storage
+// CONTENT.JS - Main Scanning Logic with Fixed Click & Storage
 // =============================================================================
 
 let isScanning = false;
@@ -337,7 +337,7 @@ function processListingSync(
       matchResults: matchResults,
     };
 
-    // Handle click logic
+    // Handle click logic (FIXED VERSION)
     handleMatchResult(
       listing,
       contactBtn,
@@ -346,7 +346,8 @@ function processListingSync(
       matchResults,
       criteria,
       engaged,
-      productId
+      productId,
+      alreadyContacted
     );
 
     resolve({ productId, logEntry });
@@ -539,6 +540,10 @@ function checkVerification(data, criteria) {
   return { passed, details };
 }
 
+// =============================================================================
+// FIXED CLICK HANDLING
+// =============================================================================
+
 function handleMatchResult(
   listing,
   contactBtn,
@@ -547,34 +552,105 @@ function handleMatchResult(
   matchResults,
   criteria,
   engaged,
-  productId
+  productId,
+  alreadyContacted
 ) {
   const isTestMode = criteria.testMode !== false;
 
-  if (matched && contactBtn && !engaged) {
-    if (isTestMode) {
-      console.log(
-        `%c  🧪 TEST: Would contact`,
-        "background: #f39c12; color: white; padding: 2px;"
-      );
-      highlightElement(listing, true);
-      showNotification("🧪 Match (Test)", data.title.substring(0, 30) + "...");
-    } else {
-      console.log(
-        `%c  🔴 LIVE: Contacting...`,
-        "background: #e74c3c; color: white; padding: 2px;"
-      );
-      highlightElement(listing, true);
-      showNotification("🎯 Contacting!", data.title.substring(0, 30) + "...");
+  // If already contacted from previous scan, skip
+  if (alreadyContacted) {
+    console.log(
+      `%c  ⏭️  Already contacted previously`,
+      "color: #95a5a6; font-style: italic;"
+    );
+    return;
+  }
 
-      setTimeout(() => {
-        contactBtn.click();
-        markAsContacted(productId);
-        console.log(`%c  ✅ Contacted`, "color: #2ecc71;");
-      }, 500);
-    }
-  } else {
+  // If engaged (button disabled or text says contacted), skip
+  if (engaged) {
+    console.log(
+      `%c  ⏭️  Already engaged/contacted`,
+      "color: #95a5a6; font-style: italic;"
+    );
+    return;
+  }
+
+  // If not matched, just highlight as no-match
+  if (!matched) {
     highlightElement(listing, false);
+    return;
+  }
+
+  // If no contact button found, can't contact
+  if (!contactBtn) {
+    console.log(
+      `%c  ⚠️  Match found but no contact button available`,
+      "color: #f39c12;"
+    );
+    highlightElement(listing, true);
+    return;
+  }
+
+  // ============== MATCHED + HAS BUTTON + NOT CONTACTED ==============
+
+  if (isTestMode) {
+    // TEST MODE: Just highlight and log, don't click
+    console.log(
+      `%c  🧪 TEST MODE: Would contact this listing`,
+      "background: #f39c12; color: white; padding: 2px 6px; font-weight: bold;"
+    );
+    highlightElement(listing, true);
+    showNotification("🧪 Match (Test)", data.title.substring(0, 30) + "...");
+  } else {
+    // LIVE MODE: Actually click the button
+    console.log(
+      `%c  🔴 LIVE MODE: Contacting now...`,
+      "background: #e74c3c; color: white; padding: 2px 6px; font-weight: bold;"
+    );
+    highlightElement(listing, true);
+    showNotification("🎯 Contacting!", data.title.substring(0, 30) + "...");
+
+    // CRITICAL FIX: Mark as contacted BEFORE clicking to prevent race conditions
+    markAsContacted(productId);
+
+    // Wait a bit then click (gives time for DOM to settle)
+    setTimeout(() => {
+      try {
+        // Double-check button is still valid
+        if (
+          contactBtn &&
+          contactBtn.isConnected && // Still in DOM
+          !contactBtn.disabled && // Not disabled
+          typeof contactBtn.click === "function" // Has click method
+        ) {
+          contactBtn.click();
+          console.log(
+            `%c  ✅ Contact button clicked successfully`,
+            "color: #2ecc71; font-weight: bold;"
+          );
+          addConsoleLog(`Contacted: ${data.title.substring(0, 40)}`, "success");
+        } else {
+          console.warn(
+            `%c  ⚠️  Contact button became invalid before click`,
+            "color: #f39c12;"
+          );
+          // Optionally: Unmark as contacted if click failed
+          unmarkAsContacted(productId);
+        }
+      } catch (error) {
+        console.error(
+          `%c  ❌ Error clicking contact button:`,
+          "color: #e74c3c;",
+          error
+        );
+        addConsoleLog(
+          `Error contacting: ${data.title.substring(0, 40)} - ${error.message}`,
+          "error"
+        );
+        // Unmark as contacted since click failed
+        unmarkAsContacted(productId);
+      }
+    }, 500);
   }
 }
 
@@ -592,25 +668,70 @@ function createProductId(title, buyer, memberSince) {
 function markAsContacted(productId) {
   try {
     chrome.storage.local.get(["contactedProducts", "productLogs"], (result) => {
-      if (chrome.runtime.lastError) return;
+      if (chrome.runtime.lastError) {
+        console.error("Error reading storage:", chrome.runtime.lastError);
+        return;
+      }
 
       const contactedProducts = result.contactedProducts || {};
       const productLogs = result.productLogs || {};
 
+      // Mark in contactedProducts
       contactedProducts[productId] = {
         timestamp: Date.now(),
         date: new Date().toISOString(),
       };
 
+      // Update productLogs if exists
       if (productLogs[productId]) {
         productLogs[productId].engaged = "Just contacted";
         productLogs[productId].alreadyContacted = true;
         productLogs[productId].contacted = true;
       }
 
-      chrome.storage.local.set({ contactedProducts, productLogs });
+      // Save to storage
+      chrome.storage.local.set({ contactedProducts, productLogs }, () => {
+        if (chrome.runtime.lastError) {
+          console.error("Error saving storage:", chrome.runtime.lastError);
+        } else {
+          console.log(`%c  💾 Saved as contacted`, "color: #3498db;");
+        }
+      });
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error in markAsContacted:", error);
+  }
+}
+
+function unmarkAsContacted(productId) {
+  try {
+    chrome.storage.local.get(["contactedProducts", "productLogs"], (result) => {
+      if (chrome.runtime.lastError) return;
+
+      const contactedProducts = result.contactedProducts || {};
+      const productLogs = result.productLogs || {};
+
+      // Remove from contactedProducts
+      delete contactedProducts[productId];
+
+      // Update productLogs if exists
+      if (productLogs[productId]) {
+        productLogs[productId].engaged = "Available";
+        productLogs[productId].alreadyContacted = false;
+        productLogs[productId].contacted = false;
+      }
+
+      // Save to storage
+      chrome.storage.local.set({ contactedProducts, productLogs }, () => {
+        console.log(
+          `%c  🔄 Unmarked as contacted (click failed)`,
+          "color: #e67e22;"
+        );
+      });
+    });
+  } catch (error) {
+    console.error("Error in unmarkAsContacted:", error);
+  }
 }
 
 function formatIntervalLog(ms) {
