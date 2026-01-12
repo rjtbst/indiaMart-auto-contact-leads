@@ -337,7 +337,7 @@
 <body>
   <div class="header">
     <div class="title">⚡ IndiaMART ULTRA-FAST</div>
-    <div class="subtitle">Auto-Scanner with History Tracking</div>
+    <div class="subtitle">Auto-Scanner with Smart DOM Loading & Notifications</div>
   </div>
 
   <div class="container">
@@ -374,12 +374,6 @@
       </div>
 
       <div class="form-group">
-        <label>⚡ DOM Wait Time (ms)</label>
-        <input type="number" id="domWaitTime" value="500" min="0" max="5000">
-        <small>⚡ Time to wait for page DOM to load. 200-800ms recommended for stability.</small>
-      </div>
-
-      <div class="form-group">
         <label>Refresh Interval</label>
         <div class="interval-group">
           <input type="number" id="intervalValue" value="0" min="0" max="60000">
@@ -388,7 +382,7 @@
             <option value="s" selected>sec</option>
           </select>
         </div>
-        <small>Set to 0 for instant refresh (maximum speed)</small>
+        <small>⚡ Set to 0 for instant refresh. DOM loading is automatic - waits until listing appears!</small>
       </div>
 
       <div class="form-group">
@@ -429,6 +423,10 @@
           🧪 Test Mode (No Clicking)
         </label>
         <small>⚠️ Uncheck to enable LIVE mode and click buttons automatically</small>
+      </div>
+
+      <div class="info-box">
+        <strong>🔔 Notifications:</strong> You'll see popup notifications when matches are found and when contacts are made!
       </div>
 
       <button class="btn-save" id="saveBtn" style="width: 100%;">💾 Save Settings</button>

@@ -1,5 +1,5 @@
 // =============================================================================
-// POPUP.JS 
+// POPUP.JS - Updated (No DOM Wait Setting)
 // =============================================================================
 
 let updateInterval = null;
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =============================================================================
-// REAL-TIME UPDATES - 500ms (better balance)
+// REAL-TIME UPDATES
 // =============================================================================
 
 function startRealtimeUpdates() {
@@ -19,7 +19,7 @@ function startRealtimeUpdates() {
   
   updateInterval = setInterval(() => {
     updateUI();
-  }, 300); // Update every 300ms - balanced for performance
+  }, 300);
 }
 
 function updateUI() {
@@ -34,13 +34,13 @@ function updateUI() {
       statusText.style.color = '#e74c3c';
     }
     
-    // Scan count - from storage
+    // Scan count
     document.getElementById('scanCount').textContent = result.scanCount || 0;
     
     // Total contacted
     document.getElementById('totalContacted').textContent = result.totalContacted || 0;
     
-    // Update table with PRODUCT HISTORY
+    // Update table
     buildTable(result.productHistory || []);
   });
 }
@@ -81,14 +81,14 @@ function buildTable(productHistory) {
         <td><strong>#${p.scanNumber || 0}</strong></td>
         <td>${p.time}</td>
         <td title="${esc(titleFull)}" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc(titleFull)}</td>
-        <td class="${matchClass}"><strong>${p.matched ? '✔' : '✗'}</strong></td>
-        <td class="${prodClass}">${p.matchedMedicine ? '✔' : '✗'}</td>
+        <td class="${matchClass}"><strong>${p.matched ? '✓' : '✗'}</strong></td>
+        <td class="${prodClass}">${p.matchedMedicine ? '✓' : '✗'}</td>
         <td>${p.ageMonths || '-'}</td>
-        <td class="${ageCheckClass}">${p.matchedAge ? '✔' : '✗'}</td>
+        <td class="${ageCheckClass}">${p.matchedAge ? '✓' : '✗'}</td>
         <td title="${esc(countryFull)}">${esc(countryFull)}</td>
-        <td class="${countryCheckClass}">${p.matchedCountry ? '✔' : '✗'}</td>
-        <td class="${emailClass}">${p.matchedEmail ? '✔' : '✗'}</td>
-        <td class="${phoneClass}">${p.matchedPhone ? '✔' : '✗'}</td>
+        <td class="${countryCheckClass}">${p.matchedCountry ? '✓' : '✗'}</td>
+        <td class="${emailClass}">${p.matchedEmail ? '✓' : '✗'}</td>
+        <td class="${phoneClass}">${p.matchedPhone ? '✓' : '✗'}</td>
         <td>${status}</td>
       </tr>
     `;
@@ -140,7 +140,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0] && tabs[0].url && tabs[0].url.includes('indiamart.com')) {
           chrome.tabs.sendMessage(tabs[0].id, { action: 'start' });
-          alert('✅ Started!\n\nTable will show all scanned products in real-time.\nScan count will increment with each refresh.');
+          alert('✅ Started!\n\n🔔 Notifications enabled:\n- Match found alerts\n- Contact made alerts\n\nTable will show all scanned products in real-time.');
         } else {
           alert('⚠️ Open IndiaMART page first!\n\nhttps://seller.indiamart.com/bltxn/?pref=');
         }
@@ -187,13 +187,6 @@ document.getElementById('saveBtn').addEventListener('click', () => {
     }
   }
   
-  // Get DOM wait time
-  const domWaitTime = parseInt(document.getElementById('domWaitTime').value);
-  if (isNaN(domWaitTime) || domWaitTime < 0) {
-    alert('⚠️ Invalid DOM Wait Time! Must be 0 or greater.');
-    return;
-  }
-  
   const medicines = document.getElementById('medicines').value
     .split(',')
     .map(m => m.trim().toLowerCase())
@@ -215,7 +208,6 @@ document.getElementById('saveBtn').addEventListener('click', () => {
     verifyEmail: document.getElementById('verifyEmail').checked,
     verifyMobile: document.getElementById('verifyMobile').checked,
     interval: intervalMs,
-    domWaitTime: domWaitTime,
     testMode: testMode
   };
   
@@ -223,7 +215,7 @@ document.getElementById('saveBtn').addEventListener('click', () => {
     const mode = testMode ? '🧪 TEST' : '🔴 LIVE';
     const speed = intervalMs === 0 ? 'INSTANT (0ms)' : intervalMs < 1000 ? `${intervalMs}ms` : `${intervalMs/1000}s`;
     const prods = medicines.length > 0 ? medicines.join(', ') : 'ALL PRODUCTS';
-    alert(`✅ Saved!\n\nMode: ${mode}\nRefresh Interval: ${speed}\nDOM Wait: ${domWaitTime}ms\nProducts: ${prods}\n\n⚡ Total cycle time ≈ ${domWaitTime + intervalMs}ms`);
+    alert(`✅ Saved!\n\nMode: ${mode}\nRefresh Interval: ${speed}\nProducts: ${prods}\n\n🔔 Notifications: Enabled\n⚡ Smart DOM Loading: Auto-waits for listings`);
   });
 });
 
@@ -237,9 +229,6 @@ function loadSettings() {
       document.getElementById('verifyEmail').checked = c.verifyEmail !== false;
       document.getElementById('verifyMobile').checked = c.verifyMobile !== false;
       document.getElementById('testMode').checked = c.testMode !== false;
-      
-      // Load DOM wait time
-      document.getElementById('domWaitTime').value = c.domWaitTime !== undefined ? c.domWaitTime : 500;
       
       const intervalMs = c.interval || 0;
       if (intervalMs < 1000) {

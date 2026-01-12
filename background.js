@@ -1,5 +1,5 @@
 // =============================================================================
-// BACKGROUND.JS - COMPLETE FIXED VERSION
+// BACKGROUND.JS - UPDATED (NO DOM WAIT TIME)
 // =============================================================================
 
 // Initialize on install
@@ -19,7 +19,6 @@ chrome.runtime.onInstalled.addListener(() => {
         verifyEmail: true,
         verifyMobile: true,
         interval: 0, // Default to instant (0ms)
-        domWaitTime: 500, // Default DOM wait time
         testMode: true
       };
     }
