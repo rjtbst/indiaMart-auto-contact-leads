@@ -136,35 +136,19 @@ document.getElementById('startBtn').addEventListener('click', () => {
       return;
     }
     
-    // Request notification permission first
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          startScanning(result.criteria);
+    chrome.storage.local.set({ isRunning: true }, () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0] && tabs[0].url && tabs[0].url.includes('indiamart.com')) {
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'start' });
+          const productsText = result.criteria.productsToScan === 2 ? '2 products' : '1 product';
+          alert(`✅ Started!\n\n🔔 Browser notifications will appear automatically\n📦 Scanning ${productsText} per refresh\n\nIf you don't see notifications, check browser notification settings.`);
         } else {
-          alert('⚠️ Notification permission denied. You won\'t see match alerts.\n\nYou can still use the extension, but notifications will be disabled.');
-          startScanning(result.criteria);
+          alert('⚠️ Open IndiaMART page first!\n\nhttps://seller.indiamart.com/bltxn/?pref=');
         }
       });
-    } else {
-      startScanning(result.criteria);
-    }
-  });
-});
-
-function startScanning(criteria) {
-  chrome.storage.local.set({ isRunning: true }, () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url && tabs[0].url.includes('indiamart.com')) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'start' });
-        const productsText = criteria.productsToScan === 2 ? '2 products' : '1 product';
-        alert(`✅ Started!\n\n🔔 Browser notifications enabled\n📦 Scanning ${productsText} per refresh\n\nTable will show all scanned products in real-time.`);
-      } else {
-        alert('⚠️ Open IndiaMART page first!\n\nhttps://seller.indiamart.com/bltxn/?pref=');
-      }
     });
   });
-}
+});
 
 document.getElementById('stopBtn').addEventListener('click', () => {
   chrome.storage.local.set({ isRunning: false }, () => {

@@ -87,6 +87,18 @@
       background: rgba(255, 255, 255, 0.15);
     }
     
+    /* Fix dropdown options visibility */
+    select option {
+      background: #2d2d44;
+      color: white;
+      padding: 10px;
+    }
+    
+    select option:hover {
+      background: #667eea;
+      color: white;
+    }
+    
     .interval-group {
       display: flex;
       gap: 8px;
@@ -435,7 +447,13 @@
       </div>
 
       <div class="info-box">
-        <strong>🔔 Notifications:</strong> You'll see popup notifications when matches are found and when contacts are made!
+        <strong>🔔 Notifications:</strong> 
+        <div style="margin-top: 6px;">
+          • Browser will ask for permission when you visit IndiaMART<br>
+          • <strong>Click "Allow"</strong> to enable match/contact alerts<br>
+          • Notifications appear in your system notification area<br>
+          • If blocked, enable in: <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 3px;">chrome://settings/content/notifications</code>
+        </div>
       </div>
 
       <button class="btn-save" id="saveBtn" style="width: 100%;">💾 Save Settings</button>

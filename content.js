@@ -15,6 +15,17 @@ console.log("IndiaMART ULTRA-FAST - Fixed DOM + Notifications");
 // INITIALIZATION
 // =============================================================================
 
+// Request notification permission on load
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+      console.log('✅ Notification permission granted');
+    } else {
+      console.log('⚠️ Notification permission denied');
+    }
+  });
+}
+
 chrome.storage.local.get(["isRunning", "scanCount", "totalContacted"], (result) => {
   if (result.scanCount) {
     scanCount = result.scanCount;
@@ -40,37 +51,51 @@ chrome.runtime.onMessage.addListener((request) => {
 // =============================================================================
 
 function showNotification(title, message, type = 'info') {
-  // Use browser notifications that persist across page refreshes
-  if ('Notification' in window) {
-    // Request permission if needed
-    if (Notification.permission === 'granted') {
-      createBrowserNotification(title, message, type);
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          createBrowserNotification(title, message, type);
-        }
-      });
-    }
+  // Check if notifications are supported
+  if (!('Notification' in window)) {
+    console.log('⚠️ Browser notifications not supported');
+    return;
+  }
+  
+  // Check permission status
+  if (Notification.permission === 'granted') {
+    createBrowserNotification(title, message, type);
+  } else if (Notification.permission === 'default') {
+    // Request permission
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        createBrowserNotification(title, message, type);
+      } else {
+        console.log('⚠️ Notification permission denied by user');
+      }
+    });
+  } else {
+    console.log('⚠️ Notifications blocked. Enable in browser settings: chrome://settings/content/notifications');
   }
 }
 
 function createBrowserNotification(title, message, type) {
-  const icon = type === 'match' ? '✅' : type === 'contacted' ? '🔔' : 'ℹ️';
-  
-  const notification = new Notification(`${icon} ${title}`, {
-    body: message,
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">⚡</text></svg>',
-    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">⚡</text></svg>',
-    tag: 'indiamart-' + Date.now(), // Unique tag
-    requireInteraction: false, // Auto-dismiss after delay
-    silent: false
-  });
-  
-  // Auto close after 6 seconds
-  setTimeout(() => {
-    notification.close();
-  }, 6000);
+  try {
+    const icon = type === 'match' ? '✅' : type === 'contacted' ? '🔔' : 'ℹ️';
+    
+    const notification = new Notification(`${icon} ${title}`, {
+      body: message,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">⚡</text></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">⚡</text></svg>',
+      tag: 'indiamart-' + Date.now(),
+      requireInteraction: false,
+      silent: false
+    });
+    
+    // Auto close after 6 seconds
+    setTimeout(() => {
+      notification.close();
+    }, 6000);
+    
+    console.log('✅ Notification shown:', title);
+  } catch (error) {
+    console.error('❌ Notification error:', error);
+  }
 }
 
 // =============================================================================
