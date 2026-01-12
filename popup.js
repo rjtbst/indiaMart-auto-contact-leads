@@ -1,145 +1,315 @@
-// Load saved criteria on popup open
+// =============================================================================
+// POPUP.JS 
+// =============================================================================
+
+let updateInterval = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-  loadCriteria();
+  loadSettings();
+  updateUI();
+  startRealtimeUpdates();
 });
 
-// Save criteria
-document.getElementById('saveCriteria').addEventListener('click', () => {
-  const intervalValue = parseInt(document.getElementById('intervalValue').value);
-  const intervalUnit = document.getElementById('intervalUnit').value;
+// =============================================================================
+// REAL-TIME UPDATES - 500ms (better balance)
+// =============================================================================
+
+function startRealtimeUpdates() {
+  if (updateInterval) clearInterval(updateInterval);
   
-  // Convert to milliseconds
-  let intervalMs = intervalValue;
-  if (intervalUnit === 's') {
-    intervalMs = intervalValue * 1000;
-  } else if (intervalUnit === 'm') {
-    intervalMs = intervalValue * 60 * 1000;
+  updateInterval = setInterval(() => {
+    updateUI();
+  }, 300); // Update every 300ms - balanced for performance
+}
+
+function updateUI() {
+  chrome.storage.local.get(['isRunning', 'scanCount', 'productHistory', 'totalContacted'], (result) => {
+    // Status
+    const statusText = document.getElementById('statusText');
+    if (result.isRunning) {
+      statusText.textContent = '🟢 Running';
+      statusText.style.color = '#2ecc71';
+    } else {
+      statusText.textContent = '🔴 Stopped';
+      statusText.style.color = '#e74c3c';
+    }
+    
+    // Scan count - from storage
+    document.getElementById('scanCount').textContent = result.scanCount || 0;
+    
+    // Total contacted
+    document.getElementById('totalContacted').textContent = result.totalContacted || 0;
+    
+    // Update table with PRODUCT HISTORY
+    buildTable(result.productHistory || []);
+  });
+}
+
+function buildTable(productHistory) {
+  const container = document.getElementById('tableContainer');
+  const countEl = document.getElementById('tableCount');
+  
+  if (!productHistory || productHistory.length === 0) {
+    container.innerHTML = '<div class="empty-state">No leads scanned yet. Click Start to begin.</div>';
+    countEl.textContent = '0';
+    return;
   }
   
-  const criteria = {
-    medicines: document.getElementById('medicines').value.split(',').map(m => m.trim().toLowerCase()).filter(m => m),
-    monthsBefore: parseInt(document.getElementById('monthsBefore').value),
-    countries: document.getElementById('countries').value.split(',').map(c => c.trim().toLowerCase()).filter(c => c),
-    verifyEmail: document.getElementById('verifyEmail').checked,
-    verifyMobile: document.getElementById('verifyMobile').checked,
-    interval: intervalMs,
-    intervalDisplay: {
-      value: intervalValue,
-      unit: intervalUnit
-    },
-    testMode: document.getElementById('testMode').checked
-  };
+  countEl.textContent = productHistory.length;
   
-  const displayTime = formatInterval(intervalMs);
-  const monthsText = criteria.monthsBefore === 0 ? 'any age' : `at least ${criteria.monthsBefore} months old`;
-  const countriesText = criteria.countries.length > 0 ? criteria.countries.join(', ') : 'all countries';
-  const productsText = criteria.medicines.length > 0 ? criteria.medicines.join(', ') : 'all products';
-  const modeText = criteria.testMode ? '🧪 TEST MODE (No clicking)' : '🔴 LIVE MODE (Will click buttons!)';
+  // Build table rows - newest first
+  const rows = [...productHistory].reverse().map(p => {
+    const rowClass = p.contacted ? 'contacted-row' : '';
+    const matchClass = p.matched ? 'match-yes' : 'match-no';
+    const prodClass = p.matchedMedicine ? 'match-yes' : 'match-no';
+    const ageCheckClass = p.matchedAge ? 'match-yes' : 'match-no';
+    const countryCheckClass = p.matchedCountry ? 'match-yes' : 'match-no';
+    const emailClass = p.matchedEmail ? 'match-yes' : 'match-no';
+    const phoneClass = p.matchedPhone ? 'match-yes' : 'match-no';
+    
+    const status = p.contacted 
+      ? '<span class="badge badge-contacted">CONTACTED</span>'
+      : p.alreadyContacted
+      ? '<span class="badge badge-contacted">PREV CONTACTED</span>'
+      : '<span class="badge badge-available">AVAILABLE</span>';
+    
+    const titleFull = p.title || 'N/A';
+    const countryFull = p.country || 'N/A';
+    
+    return `
+      <tr class="${rowClass}">
+        <td><strong>#${p.scanNumber || 0}</strong></td>
+        <td>${p.time}</td>
+        <td title="${esc(titleFull)}" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc(titleFull)}</td>
+        <td class="${matchClass}"><strong>${p.matched ? '✔' : '✗'}</strong></td>
+        <td class="${prodClass}">${p.matchedMedicine ? '✔' : '✗'}</td>
+        <td>${p.ageMonths || '-'}</td>
+        <td class="${ageCheckClass}">${p.matchedAge ? '✔' : '✗'}</td>
+        <td title="${esc(countryFull)}">${esc(countryFull)}</td>
+        <td class="${countryCheckClass}">${p.matchedCountry ? '✔' : '✗'}</td>
+        <td class="${emailClass}">${p.matchedEmail ? '✔' : '✗'}</td>
+        <td class="${phoneClass}">${p.matchedPhone ? '✔' : '✗'}</td>
+        <td>${status}</td>
+      </tr>
+    `;
+  }).join('');
   
-  chrome.storage.local.set({ criteria }, () => {
-    showAlert(`✅ Criteria saved!\n\nProducts: ${productsText}\nInterval: ${displayTime}\nUser Age: ${monthsText}\nCountries: ${countriesText}\nMode: ${modeText}\n\nGo to any IndiaMArt page and use the sidebar to start scanning.`);
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Scan#</th>
+          <th>Time</th>
+          <th>Title</th>
+          <th>Match</th>
+          <th>Prod</th>
+          <th>Age</th>
+          <th>Age✓</th>
+          <th>Country</th>
+          <th>Ctry✓</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+function esc(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+// =============================================================================
+// CONTROLS
+// =============================================================================
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  chrome.storage.local.get(['criteria'], (result) => {
+    if (!result.criteria) {
+      alert('⚠️ Save settings first!');
+      return;
+    }
+    
+    chrome.storage.local.set({ isRunning: true }, () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0] && tabs[0].url && tabs[0].url.includes('indiamart.com')) {
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'start' });
+          alert('✅ Started!\n\nTable will show all scanned products in real-time.\nScan count will increment with each refresh.');
+        } else {
+          alert('⚠️ Open IndiaMART page first!\n\nhttps://seller.indiamart.com/bltxn/?pref=');
+        }
+      });
+    });
   });
 });
 
-// Load criteria
-function loadCriteria() {
+document.getElementById('stopBtn').addEventListener('click', () => {
+  chrome.storage.local.set({ isRunning: false }, () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'stop' }).catch(() => {});
+      }
+    });
+    alert('⏸️ Stopped!');
+  });
+});
+
+// =============================================================================
+// SETTINGS
+// =============================================================================
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const testMode = document.getElementById('testMode').checked;
+  
+  if (!testMode) {
+    if (!confirm('⚠️ LIVE MODE - Will click buttons!\n\nContinue?')) {
+      document.getElementById('testMode').checked = true;
+      return;
+    }
+  }
+  
+  const intervalValue = parseInt(document.getElementById('intervalValue').value);
+  const intervalUnit = document.getElementById('intervalUnit').value;
+  
+  // Calculate interval in milliseconds
+  let intervalMs = 0;
+  if (!isNaN(intervalValue) && intervalValue >= 0) {
+    if (intervalUnit === 's') {
+      intervalMs = intervalValue * 1000;
+    } else {
+      intervalMs = intervalValue;
+    }
+  }
+  
+  // Get DOM wait time
+  const domWaitTime = parseInt(document.getElementById('domWaitTime').value);
+  if (isNaN(domWaitTime) || domWaitTime < 0) {
+    alert('⚠️ Invalid DOM Wait Time! Must be 0 or greater.');
+    return;
+  }
+  
+  const medicines = document.getElementById('medicines').value
+    .split(',')
+    .map(m => m.trim().toLowerCase())
+    .filter(m => m);
+  
+  if (medicines.length === 0) {
+    if (!confirm('⚠️ No products specified - will scan ALL products.\n\nContinue?')) {
+      return;
+    }
+  }
+  
+  const criteria = {
+    medicines: medicines,
+    monthsBefore: parseInt(document.getElementById('monthsBefore').value) || 0,
+    countries: document.getElementById('countries').value
+      .split(',')
+      .map(c => c.trim().toLowerCase())
+      .filter(c => c),
+    verifyEmail: document.getElementById('verifyEmail').checked,
+    verifyMobile: document.getElementById('verifyMobile').checked,
+    interval: intervalMs,
+    domWaitTime: domWaitTime,
+    testMode: testMode
+  };
+  
+  chrome.storage.local.set({ criteria }, () => {
+    const mode = testMode ? '🧪 TEST' : '🔴 LIVE';
+    const speed = intervalMs === 0 ? 'INSTANT (0ms)' : intervalMs < 1000 ? `${intervalMs}ms` : `${intervalMs/1000}s`;
+    const prods = medicines.length > 0 ? medicines.join(', ') : 'ALL PRODUCTS';
+    alert(`✅ Saved!\n\nMode: ${mode}\nRefresh Interval: ${speed}\nDOM Wait: ${domWaitTime}ms\nProducts: ${prods}\n\n⚡ Total cycle time ≈ ${domWaitTime + intervalMs}ms`);
+  });
+});
+
+function loadSettings() {
   chrome.storage.local.get(['criteria'], (result) => {
     if (result.criteria) {
-      document.getElementById('medicines').value = result.criteria.medicines.join(', ');
-      document.getElementById('monthsBefore').value = result.criteria.monthsBefore || 2;
-      document.getElementById('countries').value = result.criteria.countries ? result.criteria.countries.join(', ') : '';
-      document.getElementById('verifyEmail').checked = result.criteria.verifyEmail;
-      document.getElementById('verifyMobile').checked = result.criteria.verifyMobile;
-      document.getElementById('testMode').checked = result.criteria.testMode !== false;
+      const c = result.criteria;
+      document.getElementById('medicines').value = (c.medicines || []).join(', ');
+      document.getElementById('monthsBefore').value = c.monthsBefore || 2;
+      document.getElementById('countries').value = (c.countries || []).join(', ');
+      document.getElementById('verifyEmail').checked = c.verifyEmail !== false;
+      document.getElementById('verifyMobile').checked = c.verifyMobile !== false;
+      document.getElementById('testMode').checked = c.testMode !== false;
       
-      if (result.criteria.intervalDisplay) {
-        document.getElementById('intervalValue').value = result.criteria.intervalDisplay.value;
-        document.getElementById('intervalUnit').value = result.criteria.intervalDisplay.unit;
+      // Load DOM wait time
+      document.getElementById('domWaitTime').value = c.domWaitTime !== undefined ? c.domWaitTime : 500;
+      
+      const intervalMs = c.interval || 0;
+      if (intervalMs < 1000) {
+        document.getElementById('intervalValue').value = intervalMs;
+        document.getElementById('intervalUnit').value = 'ms';
       } else {
-        document.getElementById('intervalValue').value = result.criteria.interval || 5000;
+        document.getElementById('intervalValue').value = intervalMs / 1000;
         document.getElementById('intervalUnit').value = 's';
       }
     }
   });
 }
 
-// Export CSV
-document.getElementById('exportCsv').addEventListener('click', () => {
-  chrome.storage.local.get(['logs'], (result) => {
-    if (!result.logs || result.logs.length === 0) {
-      showAlert('❌ No logs to export!');
+// =============================================================================
+// EXPORT & CLEAR
+// =============================================================================
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  chrome.storage.local.get(['productHistory'], (result) => {
+    if (!result.productHistory || result.productHistory.length === 0) {
+      alert('⚠️ No data! History is empty.');
       return;
     }
     
-    const csv = convertToCSV(result.logs);
-    downloadCSV(csv, 'indiamart_logs.csv');
-    showAlert(`✅ Exported ${result.logs.length} logs to CSV!`);
+    const products = result.productHistory;
+    const headers = ['Scan#', 'Time', 'Title', 'Strength', 'Age', 'Country', 'Buyer', 'Email', 'Phone', 'Matched', 'Contacted', 'Product ID'];
+    const rows = products.map(p => [
+      p.scanNumber || 0, 
+      p.time, 
+      p.title, 
+      p.strength || '',
+      p.ageMonths || 0, 
+      p.country || '', 
+      p.buyer || '',
+      p.verifiedEmail || '', 
+      p.verifiedPhone || '',
+      p.matched ? 'YES' : 'NO', 
+      p.contacted ? 'YES' : 'NO',
+      p.productId || ''
+    ]);
+    
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `indiamart_history_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert(`✅ Exported ${products.length} products from history!`);
   });
 });
 
-// Clear logs
 document.getElementById('clearBtn').addEventListener('click', () => {
-  if (confirm('Are you sure you want to clear all logs and contacted products history?')) {
-    chrome.storage.local.set({ 
-      logs: [],
-      contactedProducts: {}
+  if (confirm('⚠️ Clear all data?\n\nThis will clear:\n- Product history (all scanned products)\n- Contacted products list\n- Scan count\n- Total contacted count\n\nContinue?')) {
+    chrome.storage.local.set({
+      currentProduct: null,
+      productHistory: [],
+      contactedProducts: {},
+      scanCount: 0,
+      refreshTime: 0,
+      totalContacted: 0
     }, () => {
-      showAlert('🗑️ Logs and contacted products cleared!');
+      updateUI();
+      alert('🗑️ Cleared all data!');
     });
   }
 });
-
-// Helper functions
-function formatInterval(ms) {
-  if (ms < 1000) {
-    return `${ms}ms`;
-  } else if (ms < 60000) {
-    return `${(ms / 1000).toFixed(1)}s`;
-  } else {
-    return `${(ms / 60000).toFixed(1)}m`;
-  }
-}
-
-function convertToCSV(logs) {
-  const headers = ['Time', 'Title', 'User Months Old', 'Country', 'Buyer', 'Email', 'Phone', 'Engaged', 'Matched', 'Title Match', 'Age Match', 'Country Match'];
-  const rows = logs.map(log => {
-    const matchResults = log.matchResults || {};
-    return [
-      log.time,
-      log.title,
-      log.userMonthsOld || 'N/A',
-      log.country || 'N/A',
-      log.buyer || 'N/A',
-      log.verifiedEmail || 'N/A',
-      log.verifiedPhone || 'N/A',
-      log.engaged || '',
-      log.matched ? 'YES' : 'NO',
-      matchResults.medicine ? 'YES' : 'NO',
-      matchResults.monthsOld ? 'YES' : 'NO',
-      matchResults.country ? 'YES' : 'NO'
-    ];
-  });
-  
-  const csvContent = [
-    headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-  ].join('\n');
-  
-  return csvContent;
-}
-
-function downloadCSV(csv, filename) {
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function showAlert(message) {
-  alert(message);
-}

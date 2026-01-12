@@ -1,61 +1,42 @@
 // =============================================================================
-// CONTENT.JS - Main Scanning Logic with Fixed Click & Storage
+// CONTENT.JS - COMPLETE FIXED VERSION
 // =============================================================================
 
 let isScanning = false;
-let scanInterval = null;
 let scanCount = 0;
-let consoleLogs = [];
+let totalContacted = 0;
+let lastRefreshTime = 0;
 
-console.log("IndiaMART Auto Contact Content Script Loaded");
-
-function addConsoleLog(message, type = "info") {
-  const timestamp = new Date().toLocaleTimeString();
-  consoleLogs.push({ timestamp, message, type });
-  if (consoleLogs.length > 100) consoleLogs.shift();
-
-  try {
-    chrome.storage.local.set({ consoleLog: consoleLogs }, () => {});
-  } catch (error) {}
-}
+console.log("IndiaMART ULTRA-FAST - Fixed Version");
 
 // =============================================================================
 // INITIALIZATION
 // =============================================================================
 
-setTimeout(() => {
-  if (typeof initializeSidebar === "function") {
-    initializeSidebar();
+chrome.storage.local.get(["isRunning", "scanCount", "totalContacted"], (result) => {
+  // Restore scan count from storage
+  if (result.scanCount) {
+    scanCount = result.scanCount;
   }
-}, 500);
-
-chrome.storage.local.get(["isRunning"], (result) => {
+  
+  // Restore total contacted from storage
+  if (result.totalContacted) {
+    totalContacted = result.totalContacted;
+  }
+  
   if (result.isRunning) {
-    setTimeout(() => {
-      startScanning();
-      if (typeof updateSidebarStatus === "function") {
-        updateSidebarStatus();
-      }
-    }, 1000);
+    setTimeout(startScanning, 500); // Wait for DOM
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case "start":
-      startScanning();
-      break;
-    case "stop":
-      stopScanning();
-      break;
-    case "toggle-sidebar":
-      if (typeof toggleSidebar === "function") toggleSidebar();
-      break;
-  }
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.action === "start") startScanning();
+  else if (request.action === "stop") stopScanning();
+  else if (request.action === "ping") return true;
 });
 
 // =============================================================================
-// SCANNING FUNCTIONS
+// MAIN SCANNING LOOP
 // =============================================================================
 
 function startScanning() {
@@ -63,175 +44,111 @@ function startScanning() {
 
   chrome.storage.local.get(["criteria"], (result) => {
     if (!result.criteria) {
-      showNotification(
-        "⚠️ No Criteria Set",
-        "Please set criteria in the extension popup first"
-      );
+      console.error("❌ No criteria set");
       return;
     }
 
     isScanning = true;
-    scanCount = 0;
+    const mode = result.criteria.testMode !== false ? "TEST" : "LIVE";
+    const domWait = result.criteria.domWaitTime !== undefined ? result.criteria.domWaitTime : 500;
+    const refreshInterval = result.criteria.interval !== undefined ? result.criteria.interval : 0;
+    
+    console.log(`%c⚡ ULTRA-FAST MODE - ${mode}`, "color: #e74c3c; font-weight: bold; font-size: 16px;");
+    console.log(`%c⚙️ DOM Wait: ${domWait}ms | Refresh Interval: ${refreshInterval}ms`, "color: #3498db; font-weight: bold;");
 
-    const mode = result.criteria.testMode !== false ? "TEST MODE" : "LIVE MODE";
-    console.log(
-      "%c╔═══════════════════════════════════════╗",
-      "color: #667eea; font-weight: bold;"
-    );
-    console.log(
-      "%c║  IndiaMART Auto Contact Started      ║",
-      "color: #667eea; font-weight: bold;"
-    );
-    console.log(
-      "%c╚═══════════════════════════════════════╝",
-      "color: #667eea; font-weight: bold;"
-    );
-    console.log(
-      `%cMode: ${mode}`,
-      "color: " +
-        (result.criteria.testMode !== false ? "#f39c12" : "#e74c3c") +
-        "; font-weight: bold;"
-    );
-
-    addConsoleLog("═══════════════════════════════════", "info");
-    addConsoleLog(`Extension Started - ${mode}`, "success");
-
-    showNotification(
-      "✅ Started",
-      `Scanning every ${formatIntervalLog(result.criteria.interval)}`
-    );
-
-    scanPage(result.criteria);
-    scanInterval = setInterval(() => {
-      scanPage(result.criteria);
-    }, result.criteria.interval);
+    // Wait for DOM to be ready before scanning
+    if (document.readyState === 'complete') {
+      scanPageNow(result.criteria);
+    } else {
+      window.addEventListener('load', () => {
+        scanPageNow(result.criteria);
+      });
+    }
   });
 }
 
 function stopScanning() {
   isScanning = false;
-  if (scanInterval) {
-    clearInterval(scanInterval);
-    scanInterval = null;
-  }
-  showNotification("⏸️ Stopped", "Scanning paused");
-  console.log("Scanning stopped");
-  addConsoleLog("Scanning stopped", "warning");
+  chrome.storage.local.set({ isRunning: false });
+  console.log("⏸️ Stopped");
 }
 
-function scanPage(criteria) {
+function scanPageNow(criteria) {
   scanCount++;
-  const scanTime = new Date().toLocaleTimeString();
-
-  console.log(
-    `\n%c=== Scan #${scanCount} at ${scanTime} ===`,
-    "color: #667eea; font-weight: bold;"
-  );
-  addConsoleLog(`=== Scan #${scanCount} at ${scanTime} ===`, "info");
-
   const now = Date.now();
+  
+  // Calculate refresh time
+  let refreshTime = 0;
+  if (lastRefreshTime > 0) {
+    refreshTime = now - lastRefreshTime;
+  }
+
+  console.log(`%c⚡ Scan #${scanCount} - Refresh: ${refreshTime}ms`, "color: #e74c3c; font-weight: bold;");
+
+  // Update scan count immediately in storage (NON-BLOCKING - parallel)
   chrome.storage.local.set({
     lastScan: now,
     scanCount: scanCount,
-    nextScan: now + criteria.interval,
+    refreshTime: refreshTime,
+    totalContacted: totalContacted,
   });
 
-  const listings = document.querySelectorAll(
-    '.bl_listing > [class*="bl_grid"]'
-  );
+  // Get first listing ONLY - updated selectors
+  const firstListing = document.querySelector('.bl_listing > [id*="list1"], .bl_grid.Prd_Enq, [class*="bl_grid"][class*="Prd_Enq"]');
 
-  if (listings.length === 0) {
-    console.log("%cNo listings found", "color: #e74c3c;");
-    addConsoleLog("No listings found", "error");
+  if (!firstListing) {
+    console.log("%c❌ No listing - REFRESH NOW", "color: #e74c3c;");
+    
+    // Save empty scan to history (NON-BLOCKING)
+    saveToHistory({
+      time: new Date().toLocaleTimeString(),
+      timestamp: Date.now(),
+      scanNumber: scanCount,
+      title: "No listing found",
+      strength: "N/A",
+      country: "N/A",
+      buyer: "N/A",
+      buys: "N/A",
+      ageMonths: 0,
+      verifiedEmail: "",
+      verifiedPhone: "",
+      matched: false,
+      matchedMedicine: false,
+      matchedMedicineName: "N/A",
+      matchedAge: false,
+      matchedCountry: false,
+      countryName: "N/A",
+      matchedEmail: false,
+      matchedPhone: false,
+      contacted: false,
+      alreadyContacted: false,
+      productId: "no_listing"
+    }).catch(err => console.error("Storage error:", err));
+    
+    refreshNow(criteria.interval || 0);
     return;
   }
 
-  console.log(`%cFound ${listings.length} listings`, "color: #2ecc71;");
-  addConsoleLog(`Found ${listings.length} listings`, "success");
-
-  processAllListings(listings, criteria);
+  // Process lead
+  processLeadFast(firstListing, criteria);
 }
 
 // =============================================================================
-// PROCESS ALL LISTINGS
+// PROCESS LEAD - EXTRACT → MATCH → SAVE → CLICK → REFRESH
 // =============================================================================
 
-async function processAllListings(listings, criteria) {
-  // CRITICAL: Get existing productLogs ONCE at the start
-  const storageData = await new Promise((resolve) => {
-    chrome.storage.local.get(["contactedProducts", "productLogs"], resolve);
-  });
-
-  const contactedProducts = storageData.contactedProducts || {};
-  const productLogs = storageData.productLogs || {};
-
-  let processedCount = 0;
-
-  for (let index = 0; index < listings.length; index++) {
-    const listing = listings[index];
-
-    try {
-      const result = await processListingSync(
-        listing,
-        criteria,
-        index + 1,
-        contactedProducts
-      );
-
-      if (result) {
-        // CRITICAL: Add to productLogs object (not array!)
-        productLogs[result.productId] = result.logEntry;
-        processedCount++;
-      }
-    } catch (error) {
-      console.error(`Error processing listing ${index + 1}:`, error);
-    }
-  }
-
-  // CRITICAL: Save ALL products at once after processing
-  await new Promise((resolve) => {
-    chrome.storage.local.set({ productLogs }, () => {
-      console.log(
-        `%c✅ Saved ${processedCount} products to storage`,
-        "color: #2ecc71; font-weight: bold;"
-      );
-      resolve();
-    });
-  });
-
-  console.log(
-    `%c=== Scan #${scanCount} completed ===`,
-    "color: #667eea; font-weight: bold;"
-  );
-  addConsoleLog(`=== Scan completed: ${processedCount} products ===`, "info");
-
-  // Wait before updating sidebar
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  if (typeof updateSidebarStatus === "function") {
-    updateSidebarStatus();
-  }
-}
-
-// =============================================================================
-// PROCESS SINGLE LISTING
-// =============================================================================
-
-function processListingSync(
-  listing,
-  criteria,
-  listingNumber,
-  contactedProducts
-) {
-  return new Promise((resolve) => {
+async function processLeadFast(listing, criteria) {
+  try {
+    // STEP 1: EXTRACT DATA
     const title = extractTitle(listing);
-    const strength = extractFromTable(listing, "Strength");
+    const buys = extractBuys(listing);
+    const strength = extractFromTable(listing, "strength");
     const memberSince = extractMemberSince(listing);
     const country = extractCountry(listing);
-    const buys = extractBuys(listing);
-    const verifications = extractAvailableVerifications(listing);
+    const verifications = extractVerifications(listing);
+    const contactBtn = listing.querySelector('.btnCBN, .btnCBN1, [class*="btnCBN"], div[onclick*="contactbuyernow"]');
 
-    const scrapedData = {
+    const data = {
       title: title,
       strength: strength,
       monthsOld: memberSince,
@@ -239,119 +156,175 @@ function processListingSync(
       country: country,
       buys: buys,
       buyer: buys,
-      verifiedEmail: verifications.email ? "Email ID Available/Verified" : "",
-      verifiedPhone: verifications.phone ? "Mobile Number Available" : "",
-      isRetail: listing.querySelector(".retailmsg") !== null,
+      verifiedEmail: verifications.email ? "Email Verified" : "",
+      verifiedPhone: verifications.phone ? "Phone Verified" : "",
     };
 
-    const productId = createProductId(
-      scrapedData.title,
-      scrapedData.buyer,
-      scrapedData.monthsOld
-    );
+    console.log(`%c📦 ${title.substring(0, 40)}`, "color: #3498db;");
 
-    console.log(
-      `\n%c━━━ Listing #${listingNumber}: ${scrapedData.title.substring(
-        0,
-        40
-      )}...`,
-      "color: #9b59b6;"
-    );
+    // STEP 2: CHECK MATCHING CRITERIA
+    const matchResults = checkMatch(data, criteria);
+    const matched = matchResults.medicine && matchResults.monthsOld && matchResults.country && matchResults.verification.passed;
 
-    const alreadyContacted = contactedProducts[productId] || false;
+    console.log(matched ? `%c✅ MATCH` : `%c❌ NO MATCH`, `color: ${matched ? "#2ecc71" : "#e74c3c"}; font-weight: bold;`);
 
-    const contactBtn = listing.querySelector(
-      '.btnCBN, .btnCBN1, [class*="btnCBN"], div[onclick*="contactbuyernow"]'
-    );
+    // STEP 3: CHECK IF ALREADY CONTACTED
+    const productId = createProductId(data.title, data.buyer, data.monthsOld);
+    
+    const storageData = await new Promise((resolve) => {
+      chrome.storage.local.get(["contactedProducts"], resolve);
+    });
+    
+    const alreadyContacted = storageData.contactedProducts && storageData.contactedProducts[productId];
+    const buttonEngaged = contactBtn && (contactBtn.disabled || contactBtn.textContent.toLowerCase().includes("contacted"));
 
-    const engaged =
-      contactBtn &&
-      (contactBtn.disabled ||
-        contactBtn.textContent.toLowerCase().includes("contacted") ||
-        contactBtn.textContent.toLowerCase().includes("sent"));
-
-    // Check matching criteria
-    const matchResults = checkMatchingCriteria(scrapedData, criteria);
-    const matched =
-      matchResults.medicine &&
-      matchResults.monthsOld &&
-      matchResults.country &&
-      matchResults.verification.passed;
-
-    console.log(
-      matched ? `%c  🎯 MATCH` : `%c  ❌ NO MATCH`,
-      `background: ${
-        matched ? "#2ecc71" : "#e74c3c"
-      }; color: white; padding: 2px 6px;`
-    );
-
-    // CRITICAL: Create complete log entry with ALL fields
-    const logEntry = {
+    // STEP 4: CREATE PRODUCT DATA
+    const productData = {
       time: new Date().toLocaleTimeString(),
       timestamp: Date.now(),
-
-      // Basic info
-      title: scrapedData.title || "N/A",
-      strength: scrapedData.strength || "N/A",
-      country: scrapedData.country || "N/A",
-      buyer: scrapedData.buyer || "N/A",
-      buys: scrapedData.buys || "N/A",
-
-      // Age info
-      userMonthsOld: scrapedData.monthsOldNumber,
-      ageMonths: scrapedData.monthsOldNumber,
-
-      // Verification info
-      verifiedEmail: scrapedData.verifiedEmail || "",
-      verifiedPhone: scrapedData.verifiedPhone || "",
-
-      // Match info
+      scanNumber: scanCount,
+      title: data.title || "N/A",
+      strength: data.strength || "N/A",
+      country: data.country || "N/A",
+      buyer: data.buyer || "N/A",
+      buys: data.buys || "N/A",
+      ageMonths: data.monthsOldNumber,
+      verifiedEmail: data.verifiedEmail || "",
+      verifiedPhone: data.verifiedPhone || "",
       matched: matched,
-
-      // CRITICAL: Individual match flags for table coloring
       matchedMedicine: matchResults.medicine,
       matchedMedicineName: matchResults.matchedMedicine || "N/A",
       matchedAge: matchResults.monthsOld,
       matchedCountry: matchResults.country,
-      countryName: scrapedData.country || "N/A",
-      matchedEmail:
-        matchResults.verification.details.email !== undefined
-          ? matchResults.verification.details.email
-          : true,
-      matchedPhone:
-        matchResults.verification.details.mobile !== undefined
-          ? matchResults.verification.details.mobile
-          : true,
-
-      // Status
-      engaged: alreadyContacted
-        ? "Already contacted"
-        : engaged
-        ? "Already contacted"
-        : "Available",
-      alreadyContacted: alreadyContacted || engaged,
-      contacted: alreadyContacted || engaged,
-
-      // Meta
+      countryName: data.country || "N/A",
+      matchedEmail: matchResults.verification.details.email !== undefined ? matchResults.verification.details.email : true,
+      matchedPhone: matchResults.verification.details.mobile !== undefined ? matchResults.verification.details.mobile : true,
+      contacted: false,
+      alreadyContacted: alreadyContacted || buttonEngaged,
       productId: productId,
-      matchResults: matchResults,
     };
 
-    // Handle click logic (FIXED VERSION)
-    handleMatchResult(
-      listing,
-      contactBtn,
-      scrapedData,
-      matched,
-      matchResults,
-      criteria,
-      engaged,
-      productId,
-      alreadyContacted
-    );
+    // STEP 5: SAVE TO HISTORY (THIS IS CRITICAL)
+    await saveToHistory(productData);
+    console.log("%c💾 Saved to History", "color: #3498db;");
 
-    resolve({ productId, logEntry });
+    // STEP 6: CLICK IF MATCHED (LIVE MODE ONLY)
+    let clicked = false;
+    if (matched && !alreadyContacted && !buttonEngaged && contactBtn) {
+      const isTestMode = criteria.testMode !== false;
+      
+      if (isTestMode) {
+        console.log("%c🧪 TEST MODE - NOT CLICKING", "background: #f39c12; color: white; padding: 2px 6px;");
+      } else {
+        console.log("%c🔴 LIVE MODE - CLICKING!", "background: #e74c3c; color: white; padding: 2px 6px; font-weight: bold;");
+        
+        try {
+          contactBtn.click();
+          console.log("%c✅ CLICKED!", "color: #2ecc71; font-weight: bold;");
+          
+          // Increment total contacted
+          totalContacted++;
+          
+          // Mark as contacted
+          await markContactedNow(productId, productData);
+          clicked = true;
+        } catch (error) {
+          console.error("❌ Click error:", error);
+        }
+      }
+    } else {
+      if (alreadyContacted || buttonEngaged) {
+        console.log("%c⏭️ Already contacted", "color: #95a5a6;");
+      }
+      if (!contactBtn) {
+        console.log("%c⚠️ No button", "color: #f39c12;");
+      }
+    }
+
+    // STEP 7: REFRESH IMMEDIATELY (no storage wait needed - parallel saves)
+  } catch (error) {
+    console.error("❌ Error:", error);
+  }
+
+  // STEP 8: REFRESH WITH INTERVAL
+  refreshNow(criteria.interval || 0);
+}
+
+// =============================================================================
+// SAVE FUNCTIONS - HISTORY TRACKING
+// =============================================================================
+
+function saveToHistory(productData) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['productHistory'], (result) => {
+      const productHistory = result.productHistory || [];
+      
+      // Add new product to history
+      productHistory.push(productData);
+      
+      // Keep last 100 products in history (adjustable)
+      if (productHistory.length > 100) {
+        productHistory.shift();
+      }
+      
+      chrome.storage.local.set({ 
+        productHistory: productHistory,
+        currentProduct: productData // Also save as current for real-time display
+      }, () => {
+        console.log(`%c📊 History size: ${productHistory.length}`, "color: #9b59b6;");
+        resolve();
+      });
+    });
   });
+}
+
+function markContactedNow(productId, productData) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(["contactedProducts", "productHistory"], (result) => {
+      const contactedProducts = result.contactedProducts || {};
+      const productHistory = result.productHistory || [];
+
+      contactedProducts[productId] = {
+        timestamp: Date.now(),
+        date: new Date().toISOString(),
+      };
+
+      // Update the product in history
+      const updatedHistory = productHistory.map(p => 
+        p.productId === productId ? { ...p, contacted: true } : p
+      );
+
+      productData.contacted = true;
+
+      chrome.storage.local.set({ 
+        contactedProducts, 
+        productHistory: updatedHistory,
+        currentProduct: productData,
+        totalContacted: totalContacted
+      }, resolve);
+    });
+  });
+}
+
+// =============================================================================
+// REFRESH - RESPECTS INTERVAL
+// =============================================================================
+
+function refreshNow(intervalMs) {
+  if (!isScanning) return;
+
+  lastRefreshTime = Date.now();
+
+  // Use exact interval - no added delays
+  if (intervalMs === 0) {
+    console.log("%c🔄 INSTANT REFRESH!", "color: #e74c3c; font-weight: bold;");
+    location.reload();
+  } else {
+    console.log(`%c🔄 Refresh in ${intervalMs}ms`, "color: #3498db;");
+    setTimeout(() => {
+      location.reload();
+    }, intervalMs);
+  }
 }
 
 // =============================================================================
@@ -359,89 +332,47 @@ function processListingSync(
 // =============================================================================
 
 function extractTitle(listing) {
-  const selectors = [
-    ".lstNwLftCnt h2",
-    ".lstNwLftCnt h3",
-    ".lstNwLft h2",
-    "h2",
-  ];
-  for (const selector of selectors) {
-    const element = listing.querySelector(selector);
-    if (element && element.textContent.trim().length > 0) {
-      return element.textContent.trim();
-    }
-  }
-  return "";
+  const h2 = listing.querySelector(".lstNwLftCnt h2, .lstNwLft h2, h2");
+  return h2 ? h2.textContent.trim() : "";
 }
 
 function extractFromTable(listing, label) {
-  const rows = listing.querySelectorAll(
-    ".lstNwLftBtmCnt table tbody tr, table tbody tr"
-  );
+  const rows = listing.querySelectorAll("table tbody tr");
   for (const row of rows) {
     const cells = row.querySelectorAll("td");
-    if (cells.length >= 2) {
-      const labelCell = cells[0].textContent.trim().toLowerCase();
-      if (labelCell.includes(label.toLowerCase())) {
-        const valueCell = cells[1];
-        const boldValue = valueCell.querySelector("b");
-        return boldValue
-          ? boldValue.textContent.trim()
-          : valueCell.textContent.replace(":", "").trim();
-      }
+    if (cells.length >= 2 && cells[0].textContent.toLowerCase().includes(label.toLowerCase())) {
+      const boldValue = cells[1].querySelector("b");
+      return boldValue ? boldValue.textContent.trim() : cells[1].textContent.replace(":", "").trim();
     }
   }
   return "";
 }
 
 function extractMemberSince(listing) {
-  const selectors = [
-    ".lstNwRgtBD .SLC_f13",
-    ".SLC_f13",
-    '[class*="lstNwRgtBD"] [class*="SLC_f13"]',
-  ];
-  for (const selector of selectors) {
-    const element = listing.querySelector(selector);
-    if (element) {
-      const text = element.textContent.trim();
-      if (text.toLowerCase().includes("member since")) {
-        return text.replace(/-/g, "").trim();
-      }
-    }
+  const element = listing.querySelector(".lstNwRgtBD .SLC_f13, .SLC_f13");
+  if (element) {
+    const text = element.textContent.trim();
+    if (text.toLowerCase().includes("member since")) return text.replace(/-/g, "").trim();
   }
   return "";
 }
 
-function extractAvailableVerifications(listing) {
+function extractVerifications(listing) {
   const verifications = { email: false, phone: false };
-  const tooltips = listing.querySelectorAll(
-    '.lstNwRgtBD .tooltip_vfr, .tooltip_vfr, [class*="tooltip"]'
-  );
-
-  tooltips.forEach((tooltip) => {
+  const tooltips = listing.querySelectorAll('.lstNwRgtBD .tooltip_vfr, .tooltip_vfr, [class*="tooltip"]');
+  
+  for (const tooltip of tooltips) {
     const text = tooltip.textContent.toLowerCase();
     if (text.includes("email")) verifications.email = true;
-    if (text.includes("mobile") || text.includes("phone"))
-      verifications.phone = true;
-  });
-
+    if (text.includes("mobile") || text.includes("phone")) verifications.phone = true;
+  }
+  
   return verifications;
 }
 
 function extractCountry(listing) {
-  const selectors = [
-    ".coutry_click",
-    ".country_click",
-    '[class*="coutry"]',
-    '[onclick*="BLCARD_COUNTRY_SELECT"]',
-  ];
-  for (const selector of selectors) {
-    const element = listing.querySelector(selector);
-    if (element && element.textContent.trim().length > 0) {
-      return element.textContent.trim().split("Click here")[0].trim();
-    }
-  }
-  return "";
+  const element = listing.querySelector('.coutry_click, .country_click, [class*="coutry"]');
+  return element ? element.textContent.trim().split("Click here")[0].trim() : "";
 }
 
 function extractBuys(listing) {
@@ -460,7 +391,6 @@ function convertMemberAgeToMonths(memberText) {
   const text = memberText.toLowerCase();
   const numberMatch = text.match(/(\d+)\+?/);
   if (!numberMatch) return 0;
-
   const value = parseInt(numberMatch[1]);
   if (text.includes("year")) return value * 12;
   if (text.includes("month")) return value;
@@ -468,53 +398,46 @@ function convertMemberAgeToMonths(memberText) {
 }
 
 // =============================================================================
-// MATCHING LOGIC
+// MATCHING CRITERIA
 // =============================================================================
 
-function checkMatchingCriteria(data, criteria) {
+function checkMatch(data, criteria) {
   const titleLower = data.title.toLowerCase();
   const buysLower = data.buys.toLowerCase();
 
+  // Product match
   let productMatch = true;
   let matchedProduct = "all";
-
   if (criteria.medicines && criteria.medicines.length > 0) {
     productMatch = criteria.medicines.some((med) => {
       const medLower = med.toLowerCase();
       return titleLower.includes(medLower) || buysLower.includes(medLower);
     });
-    matchedProduct =
-      criteria.medicines.find((med) => {
-        const medLower = med.toLowerCase();
-        return titleLower.includes(medLower) || buysLower.includes(medLower);
-      }) || "none";
+    matchedProduct = criteria.medicines.find((med) => {
+      const medLower = med.toLowerCase();
+      return titleLower.includes(medLower) || buysLower.includes(medLower);
+    }) || "none";
   }
 
-  let monthsOldMatch = true;
-  if (criteria.monthsBefore > 0) {
-    monthsOldMatch = data.monthsOldNumber >= criteria.monthsBefore;
-  }
+  // Age match
+  let ageMatch = criteria.monthsBefore > 0 ? data.monthsOldNumber >= criteria.monthsBefore : true;
 
+  // Country match
   let countryMatch = true;
   let matchedCountry = null;
-
   if (criteria.countries && criteria.countries.length > 0) {
     const countryLower = data.country.toLowerCase();
-    countryMatch = criteria.countries.some((country) =>
-      countryLower.includes(country.toLowerCase())
-    );
-    matchedCountry = criteria.countries.find((country) =>
-      countryLower.includes(country.toLowerCase())
-    );
+    countryMatch = criteria.countries.some((country) => countryLower.includes(country.toLowerCase()));
+    matchedCountry = criteria.countries.find((country) => countryLower.includes(country.toLowerCase()));
   }
 
+  // Verification match
   const verificationMatch = checkVerification(data, criteria);
 
   return {
     medicine: productMatch,
     matchedMedicine: matchedProduct,
-    monthsOld: monthsOldMatch,
-    monthsNum: data.monthsOldNumber,
+    monthsOld: ageMatch,
     country: countryMatch,
     matchedCountry: matchedCountry,
     verification: verificationMatch,
@@ -541,121 +464,7 @@ function checkVerification(data, criteria) {
 }
 
 // =============================================================================
-// FIXED CLICK HANDLING
-// =============================================================================
-
-function handleMatchResult(
-  listing,
-  contactBtn,
-  data,
-  matched,
-  matchResults,
-  criteria,
-  engaged,
-  productId,
-  alreadyContacted
-) {
-  const isTestMode = criteria.testMode !== false;
-
-  // If already contacted from previous scan, skip
-  if (alreadyContacted) {
-    console.log(
-      `%c  ⏭️  Already contacted previously`,
-      "color: #95a5a6; font-style: italic;"
-    );
-    return;
-  }
-
-  // If engaged (button disabled or text says contacted), skip
-  if (engaged) {
-    console.log(
-      `%c  ⏭️  Already engaged/contacted`,
-      "color: #95a5a6; font-style: italic;"
-    );
-    return;
-  }
-
-  // If not matched, just highlight as no-match
-  if (!matched) {
-    highlightElement(listing, false);
-    return;
-  }
-
-  // If no contact button found, can't contact
-  if (!contactBtn) {
-    console.log(
-      `%c  ⚠️  Match found but no contact button available`,
-      "color: #f39c12;"
-    );
-    highlightElement(listing, true);
-    return;
-  }
-
-  // ============== MATCHED + HAS BUTTON + NOT CONTACTED ==============
-
-  if (isTestMode) {
-    // TEST MODE: Just highlight and log, don't click
-    console.log(
-      `%c  🧪 TEST MODE: Would contact this listing`,
-      "background: #f39c12; color: white; padding: 2px 6px; font-weight: bold;"
-    );
-    highlightElement(listing, true);
-    showNotification("🧪 Match (Test)", data.title.substring(0, 30) + "...");
-  } else {
-    // LIVE MODE: Actually click the button
-    console.log(
-      `%c  🔴 LIVE MODE: Contacting now...`,
-      "background: #e74c3c; color: white; padding: 2px 6px; font-weight: bold;"
-    );
-    highlightElement(listing, true);
-    showNotification("🎯 Contacting!", data.title.substring(0, 30) + "...");
-
-    // CRITICAL FIX: Mark as contacted BEFORE clicking to prevent race conditions
-    markAsContacted(productId);
-
-    // Wait a bit then click (gives time for DOM to settle)
-    setTimeout(() => {
-      try {
-        // Double-check button is still valid
-        if (
-          contactBtn &&
-          contactBtn.isConnected && // Still in DOM
-          !contactBtn.disabled && // Not disabled
-          typeof contactBtn.click === "function" // Has click method
-        ) {
-          contactBtn.click();
-          console.log(
-            `%c  ✅ Contact button clicked successfully`,
-            "color: #2ecc71; font-weight: bold;"
-          );
-          addConsoleLog(`Contacted: ${data.title.substring(0, 40)}`, "success");
-        } else {
-          console.warn(
-            `%c  ⚠️  Contact button became invalid before click`,
-            "color: #f39c12;"
-          );
-          // Optionally: Unmark as contacted if click failed
-          unmarkAsContacted(productId);
-        }
-      } catch (error) {
-        console.error(
-          `%c  ❌ Error clicking contact button:`,
-          "color: #e74c3c;",
-          error
-        );
-        addConsoleLog(
-          `Error contacting: ${data.title.substring(0, 40)} - ${error.message}`,
-          "error"
-        );
-        // Unmark as contacted since click failed
-        unmarkAsContacted(productId);
-      }
-    }, 500);
-  }
-}
-
-// =============================================================================
-// UTILITY FUNCTIONS
+// UTILITY
 // =============================================================================
 
 function createProductId(title, buyer, memberSince) {
@@ -663,104 +472,4 @@ function createProductId(title, buyer, memberSince) {
   const cleanBuyer = buyer.toLowerCase().replace(/[^a-z0-9]/g, "");
   const cleanMember = memberSince.toLowerCase().replace(/[^a-z0-9]/g, "");
   return `${cleanTitle}_${cleanBuyer}_${cleanMember}`.substring(0, 100);
-}
-
-function markAsContacted(productId) {
-  try {
-    chrome.storage.local.get(["contactedProducts", "productLogs"], (result) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error reading storage:", chrome.runtime.lastError);
-        return;
-      }
-
-      const contactedProducts = result.contactedProducts || {};
-      const productLogs = result.productLogs || {};
-
-      // Mark in contactedProducts
-      contactedProducts[productId] = {
-        timestamp: Date.now(),
-        date: new Date().toISOString(),
-      };
-
-      // Update productLogs if exists
-      if (productLogs[productId]) {
-        productLogs[productId].engaged = "Just contacted";
-        productLogs[productId].alreadyContacted = true;
-        productLogs[productId].contacted = true;
-      }
-
-      // Save to storage
-      chrome.storage.local.set({ contactedProducts, productLogs }, () => {
-        if (chrome.runtime.lastError) {
-          console.error("Error saving storage:", chrome.runtime.lastError);
-        } else {
-          console.log(`%c  💾 Saved as contacted`, "color: #3498db;");
-        }
-      });
-    });
-  } catch (error) {
-    console.error("Error in markAsContacted:", error);
-  }
-}
-
-function unmarkAsContacted(productId) {
-  try {
-    chrome.storage.local.get(["contactedProducts", "productLogs"], (result) => {
-      if (chrome.runtime.lastError) return;
-
-      const contactedProducts = result.contactedProducts || {};
-      const productLogs = result.productLogs || {};
-
-      // Remove from contactedProducts
-      delete contactedProducts[productId];
-
-      // Update productLogs if exists
-      if (productLogs[productId]) {
-        productLogs[productId].engaged = "Available";
-        productLogs[productId].alreadyContacted = false;
-        productLogs[productId].contacted = false;
-      }
-
-      // Save to storage
-      chrome.storage.local.set({ contactedProducts, productLogs }, () => {
-        console.log(
-          `%c  🔄 Unmarked as contacted (click failed)`,
-          "color: #e67e22;"
-        );
-      });
-    });
-  } catch (error) {
-    console.error("Error in unmarkAsContacted:", error);
-  }
-}
-
-function formatIntervalLog(ms) {
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`;
-  return `${(ms / 60000).toFixed(2)}m`;
-}
-
-function highlightElement(element, isMatch) {
-  if (isMatch) {
-    element.style.border = "3px solid #2ecc71";
-    element.style.backgroundColor = "#d5f4e6";
-    element.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.5)";
-  } else {
-    element.style.border = "1px solid #e74c3c";
-    element.style.backgroundColor = "#fadbd8";
-  }
-
-  setTimeout(() => {
-    element.style.border = "";
-    element.style.backgroundColor = "";
-    element.style.boxShadow = "";
-  }, 3000);
-}
-
-function showNotification(title, message) {
-  if (typeof window.showSidebarNotification === "function") {
-    window.showSidebarNotification(title, message);
-  } else {
-    console.log(`%c${title}: ${message}`, "color: #667eea; font-weight: bold;");
-  }
 }

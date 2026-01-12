@@ -10,134 +10,124 @@
     }
     
     body {
-      width: 380px;
+      width: 450px;
+      min-height: 600px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
+      background: #1a1a2e;
+      color: white;
     }
     
     .header {
-      background: white;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 20px;
       text-align: center;
     }
     
-    .app-title {
+    .title {
       font-size: 20px;
       font-weight: 700;
-      color: #667eea;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
     
-    .app-subtitle {
-      font-size: 12px;
-      color: #999;
+    .subtitle {
+      font-size: 11px;
+      opacity: 0.9;
     }
     
-    .content {
+    .container {
       padding: 20px;
-      max-height: 500px;
-      overflow-y: auto;
-    }
-    
-    .content::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .content::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .content::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 3px;
     }
     
     .section {
-      background: white;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 16px;
     }
     
     .section-title {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       color: #667eea;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-group {
       margin-bottom: 12px;
     }
     
-    .input-group {
-      margin-bottom: 14px;
-    }
-    
-    .input-group:last-child {
+    .form-group:last-child {
       margin-bottom: 0;
     }
     
     label {
       display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
       font-size: 12px;
-      color: #555;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: rgba(255, 255, 255, 0.9);
     }
     
     input[type="text"], input[type="number"], select {
       width: 100%;
       padding: 10px;
-      border: 2px solid #e0e0e0;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 8px;
+      color: white;
       font-size: 13px;
-      transition: all 0.3s;
     }
     
     input:focus, select:focus {
       outline: none;
       border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: rgba(255, 255, 255, 0.15);
     }
     
-    .inline-group {
+    .interval-group {
       display: flex;
       gap: 8px;
+      align-items: flex-end;
     }
     
-    .inline-group input {
+    .interval-group input {
       flex: 1;
+    }
+    
+    .interval-group select {
+      width: 80px;
     }
     
     .checkbox-group {
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 16px;
     }
     
     .checkbox-label {
       display: flex;
       align-items: center;
-      font-weight: normal;
-      font-size: 13px;
       cursor: pointer;
+      font-size: 12px;
     }
     
     .checkbox-label input {
       margin-right: 6px;
       cursor: pointer;
+      width: 16px;
+      height: 16px;
     }
     
     .test-mode-box {
       background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-      padding: 14px;
-      border-radius: 10px;
-      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
     }
     
     .test-mode-box label {
-      color: white;
       display: flex;
       align-items: center;
       cursor: pointer;
@@ -145,44 +135,75 @@
     }
     
     .test-mode-box input {
-      margin-right: 8px;
       width: 18px;
       height: 18px;
+      margin-right: 8px;
       cursor: pointer;
     }
     
     .test-mode-box small {
-      font-size: 11px;
+      font-size: 10px;
       opacity: 0.95;
     }
     
-    .button-grid {
+    .info-box {
+      background: rgba(52, 152, 219, 0.2);
+      border-left: 3px solid #3498db;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    
+    .controls-single {
       display: grid;
       grid-template-columns: 1fr;
       gap: 10px;
-      margin-top: 16px;
     }
     
     button {
       padding: 14px;
       border: none;
       border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
       font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
       transition: all 0.3s;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
     }
     
-    button:active {
-      transform: translateY(0);
+    .btn-start {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      color: white;
+    }
+    
+    .btn-stop {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+    }
+    
+    .btn-export {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+    }
+    
+    .btn-clear {
+      background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+      color: white;
     }
     
     .btn-save {
@@ -190,139 +211,245 @@
       color: white;
     }
     
-    .btn-export {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    .status-bar {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .status-item {
+      text-align: center;
+    }
+    
+    .status-label {
+      font-size: 9px;
+      opacity: 0.7;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    
+    .status-value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    
+    .refresh-time {
+      color: #2ecc71;
+    }
+    
+    .table-wrapper {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .table-header {
+      background: rgba(102, 126, 234, 0.3);
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .table-container {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+    
+    th {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 4px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 9px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    td {
+      padding: 6px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      font-size: 9px;
+    }
+    
+    .match-yes {
+      background: rgba(46, 204, 113, 0.3);
+      color: #2ecc71;
+      font-weight: 700;
+    }
+    
+    .match-no {
+      background: rgba(231, 76, 60, 0.3);
+      color: #e74c3c;
+      font-weight: 700;
+    }
+    
+    .contacted-row {
+      background: rgba(155, 89, 182, 0.2);
+    }
+    
+    .badge {
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    
+    .badge-contacted {
+      background: #9b59b6;
       color: white;
     }
     
-    .btn-clear {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    .badge-available {
+      background: #3498db;
       color: white;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 12px;
     }
     
     small {
       display: block;
-      color: #999;
       font-size: 10px;
+      opacity: 0.7;
       margin-top: 4px;
-    }
-    
-    #intervalValue{
-      width: 70px;
-    }
-    
-    .info-box {
-      background: #e3f2fd;
-      border-left: 4px solid #2196F3;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      color: #1976d2;
-      margin-top: 12px;
-    }
-    
-    .footer {
-      background: white;
-      padding: 16px 20px;
-      text-align: center;
-      font-size: 11px;
-      color: #999;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="app-title">📊 IndiaMArt Auto Contact</div>
-    <div class="app-subtitle">Configure your scan settings</div>
+    <div class="title">⚡ IndiaMART ULTRA-FAST</div>
+    <div class="subtitle">Auto-Scanner with History Tracking</div>
   </div>
 
-  <div class="content">
+  <div class="container">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-label">Status</div>
+        <div class="status-value" id="statusText">Stopped</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">Total Scans</div>
+        <div class="status-value" id="scanCount">0</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">Contacted</div>
+        <div class="status-value" style="color: #9b59b6;" id="totalContacted">0</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn-start" id="startBtn">▶ Start</button>
+      <button class="btn-stop" id="stopBtn">⏸ Stop</button>
+    </div>
+
+    <!-- Settings -->
     <div class="section">
-      <div class="section-title">🎯 Filters</div>
+      <div class="section-title">⚙️ Settings</div>
       
-      <div class="input-group">
+      <div class="form-group">
         <label>Products (comma separated)</label>
-        <input type="text" id="medicines" placeholder="Ivermectin, Azithromycin, Pregabalin...">
-        <small>Leave empty to match all products</small>
+        <input type="text" id="medicines" placeholder="Ivermectin, Azithromycin...">
+        <small>Leave empty to scan all products</small>
       </div>
 
-      <div class="input-group">
-        <label>Minimum User Age (Months)</label>
-        <select id="monthsBefore">
-          <option value="1">At least 1 month old</option>
-          <option value="2" selected>At least 2 months old</option>
-          <option value="3">At least 3 months old</option>
-          <option value="6">At least 6 months old</option>
-          <option value="12">At least 12 months old</option>
-          <option value="24">At least 24 months old</option>
-          <option value="0">Any age (no filter)</option>
-        </select>
-        <small>Only contact buyers whose account is this old or older</small>
+      <div class="form-group">
+        <label>⚡ DOM Wait Time (ms)</label>
+        <input type="number" id="domWaitTime" value="500" min="0" max="5000">
+        <small>⚡ Time to wait for page DOM to load. 200-800ms recommended for stability.</small>
       </div>
 
-      <div class="input-group">
-        <label>Country Filter</label>
-        <input type="text" id="countries" placeholder="India, USA, UK... (leave empty for all)">
-        <small>Only contact buyers from these countries (comma separated)</small>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">✅ Verification Required</div>
-      
-      <div class="checkbox-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="verifyEmail" checked>
-          Email Verified
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" id="verifyMobile" checked>
-          Mobile Verified
-        </label>
-      </div>
-      <small>Only contact buyers with these verifications</small>
-    </div>
-
-    <div class="section">
-      <div class="section-title">⏱️ Timing</div>
-      
-      <div class="input-group">
-        <label>Scan Interval</label>
-        <div class="inline-group">
-          <input type="number" id="intervalValue" value="5" min="1">
+      <div class="form-group">
+        <label>Refresh Interval</label>
+        <div class="interval-group">
+          <input type="number" id="intervalValue" value="0" min="0" max="60000">
           <select id="intervalUnit">
             <option value="ms">ms</option>
             <option value="s" selected>sec</option>
-            <option value="m">min</option>
           </select>
         </div>
-        <small>How often to rescan for new products</small>
+        <small>Set to 0 for instant refresh (maximum speed)</small>
       </div>
-    </div>
 
-    <div class="section">
+      <div class="form-group">
+        <label>Minimum User Age</label>
+        <select id="monthsBefore">
+          <option value="0">Any age</option>
+          <option value="1">1+ months</option>
+          <option value="2" selected>2+ months</option>
+          <option value="3">3+ months</option>
+          <option value="6">6+ months</option>
+          <option value="12">12+ months</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Countries (comma separated)</label>
+        <input type="text" id="countries" placeholder="India, USA, UK...">
+        <small>Leave empty for all countries</small>
+      </div>
+
+      <div class="form-group">
+        <label>Verification</label>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="verifyEmail" checked>
+            Email
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="verifyMobile" checked>
+            Mobile
+          </label>
+        </div>
+      </div>
+
       <div class="test-mode-box">
         <label>
           <input type="checkbox" id="testMode" checked>
-          🧪 Test Mode - Only Logging
+          🧪 Test Mode (No Clicking)
         </label>
-        <small>⚠️ Verify scraping before enabling auto-click</small>
+        <small>⚠️ Uncheck to enable LIVE mode and click buttons automatically</small>
       </div>
-      
-      <div class="info-box">
-        💡 Test mode lets you verify that scraping works correctly. Check the sidebar and console logs before disabling it.
+
+      <button class="btn-save" id="saveBtn" style="width: 100%;">💾 Save Settings</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <div class="table-header">
+        <span>📋 Scan History</span>
+        <span id="tableCount">0</span>
+      </div>
+      <div class="table-container" id="tableContainer">
+        <div class="empty-state">No leads scanned yet. Click Start to begin.</div>
       </div>
     </div>
 
-    <div class="button-grid">
-      <button class="btn-save" id="saveCriteria">💾 Save Criteria</button>
-      <button class="btn-export" id="exportCsv">📥 Export CSV</button>
-      <button class="btn-clear" id="clearBtn">🗑️ Clear Logs</button>
+    <!-- Actions -->
+    <div class="controls-single" style="margin-top: 16px;">
+      <button class="btn-export" id="exportBtn">📥 Export CSV</button>
+      <button class="btn-clear" id="clearBtn">🗑️ Clear All Data</button>
     </div>
-  </div>
-
-  <div class="footer">
-    Sidebar controls appear on IndiaMArt pages
   </div>
 
   <script src="popup.js"></script>

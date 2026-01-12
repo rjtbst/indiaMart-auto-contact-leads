@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "IndiaMArt Auto Contact",
-  "version": "1.0.0",
-  "description": "Automatically scan and contact IndiaMArt buyers based on custom criteria",
+  "name": "IndiaMART Ultra-Fast Auto Contact",
+  "version": "2.0.0",
+  "description": "Ultra-fast automatic scanning and contact of IndiaMART buyers with microsecond precision",
   "permissions": [
     "storage",
     "activeTab",
@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": ["https://seller.indiamart.com/bltxn/?pref=*"],
-      "js": ["content.js", "sidebar.js"],
+      "js": ["content.js"],
       "run_at": "document_idle"
     }
   ],
