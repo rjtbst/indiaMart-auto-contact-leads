@@ -19,6 +19,7 @@ chrome.runtime.onInstalled.addListener(() => {
         verifyEmail: true,
         verifyMobile: true,
         interval: 0, // Default to instant (0ms)
+        productsToScan: 1, // Default to first product only
         testMode: true
       };
     }

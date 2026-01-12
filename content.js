@@ -36,76 +36,41 @@ chrome.runtime.onMessage.addListener((request) => {
 });
 
 // =============================================================================
-// NOTIFICATION SYSTEM
+// NOTIFICATION SYSTEM - BROWSER NOTIFICATIONS (PERSIST ACROSS REFRESH)
 // =============================================================================
 
 function showNotification(title, message, type = 'info') {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === 'match' ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 
-                 type === 'contacted' ? 'linear-gradient(135deg, #9b59b6, #8e44ad)' : 
-                 'linear-gradient(135deg, #3498db, #2980b9)'};
-    color: white;
-    padding: 16px 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    z-index: 999999;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-width: 300px;
-    max-width: 400px;
-    animation: slideIn 0.3s ease-out;
-  `;
-  
-  notification.innerHTML = `
-    <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;">
-      ${type === 'match' ? '✅' : type === 'contacted' ? '🔔' : 'ℹ️'} ${title}
-    </div>
-    <div style="font-size: 12px; opacity: 0.95;">
-      ${message}
-    </div>
-  `;
-  
-  // Add animation
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes slideIn {
-      from {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+  // Use browser notifications that persist across page refreshes
+  if ('Notification' in window) {
+    // Request permission if needed
+    if (Notification.permission === 'granted') {
+      createBrowserNotification(title, message, type);
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          createBrowserNotification(title, message, type);
+        }
+      });
     }
-    @keyframes slideOut {
-      from {
-        transform: translateX(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-    }
-  `;
-  document.head.appendChild(style);
+  }
+}
+
+function createBrowserNotification(title, message, type) {
+  const icon = type === 'match' ? '✅' : type === 'contacted' ? '🔔' : 'ℹ️';
   
-  document.body.appendChild(notification);
+  const notification = new Notification(`${icon} ${title}`, {
+    body: message,
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">⚡</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">⚡</text></svg>',
+    tag: 'indiamart-' + Date.now(), // Unique tag
+    requireInteraction: false, // Auto-dismiss after delay
+    silent: false
+  });
   
-  // Auto remove after 4 seconds
+  // Auto close after 6 seconds
   setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease-in';
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 300);
-  }, 4000);
+    notification.close();
+  }, 6000);
 }
 
 // =============================================================================
@@ -147,13 +112,35 @@ function stopScanning() {
 function waitForListingThenScan(criteria) {
   if (!isScanning) return;
 
-  const listing = document.querySelector('.bl_listing > [id*="list1"], .bl_grid.Prd_Enq, [class*="bl_grid"][class*="Prd_Enq"]');
+  // Determine how many products to scan based on criteria
+  const productsToScan = criteria.productsToScan || 1;
+  
+  let listings = [];
+  
+  if (productsToScan === 1) {
+    // Get first listing only
+    const firstListing = document.querySelector('.bl_listing > [id*="list1"], .bl_grid.Prd_Enq, [class*="bl_grid"][class*="Prd_Enq"]');
+    if (firstListing) listings.push(firstListing);
+  } else if (productsToScan === 2) {
+    // Get first two listings
+    const firstListing = document.querySelector('.bl_listing > [id*="list1"]');
+    const secondListing = document.querySelector('.bl_listing > [id*="list2"]');
+    
+    if (firstListing) listings.push(firstListing);
+    if (secondListing) listings.push(secondListing);
+    
+    // If specific IDs don't work, try generic selector
+    if (listings.length === 0) {
+      const allListings = document.querySelectorAll('.bl_grid.Prd_Enq, [class*="bl_grid"][class*="Prd_Enq"]');
+      listings = Array.from(allListings).slice(0, 2);
+    }
+  }
 
-  if (listing) {
-    // DOM ready - listing found!
-    console.log(`%c✅ DOM Ready - Listing found!`, "color: #2ecc71; font-weight: bold;");
+  if (listings.length > 0) {
+    // DOM ready - listing(s) found!
+    console.log(`%c✅ DOM Ready - Found ${listings.length} listing(s)!`, "color: #2ecc71; font-weight: bold;");
     domRetryCount = 0;
-    scanPageNow(criteria, listing);
+    scanPageNow(criteria, listings);
   } else {
     // No listing yet - retry
     domRetryCount++;
@@ -202,7 +189,7 @@ function waitForListingThenScan(criteria) {
   }
 }
 
-function scanPageNow(criteria, listing) {
+function scanPageNow(criteria, listings) {
   scanCount++;
   const now = Date.now();
   
@@ -212,7 +199,7 @@ function scanPageNow(criteria, listing) {
     refreshTime = now - lastRefreshTime;
   }
 
-  console.log(`%c⚡ Scan #${scanCount} - Refresh: ${refreshTime}ms`, "color: #e74c3c; font-weight: bold;");
+  console.log(`%c⚡ Scan #${scanCount} - Refresh: ${refreshTime}ms - Scanning ${listings.length} product(s)`, "color: #e74c3c; font-weight: bold;");
 
   // Update scan count immediately in storage (NON-BLOCKING)
   chrome.storage.local.set({
@@ -222,15 +209,37 @@ function scanPageNow(criteria, listing) {
     totalContacted: totalContacted,
   });
 
-  // Process lead
-  processLeadFast(listing, criteria);
+  // Process all listings
+  processListings(listings, criteria);
+}
+
+// =============================================================================
+// PROCESS MULTIPLE LISTINGS
+// =============================================================================
+
+async function processListings(listings, criteria) {
+  for (let i = 0; i < listings.length; i++) {
+    const listing = listings[i];
+    console.log(`%c📦 Processing Product ${i + 1}/${listings.length}`, "color: #9b59b6; font-weight: bold;");
+    
+    const shouldContinue = await processLeadFast(listing, criteria, i + 1, listings.length);
+    
+    // If we clicked a button in LIVE mode, stop scanning other products and refresh
+    if (!shouldContinue) {
+      console.log(`%c🎯 Match contacted - stopping scan`, "color: #2ecc71; font-weight: bold;");
+      break;
+    }
+  }
+  
+  // Refresh after processing all products
+  refreshNow(criteria.interval || 0);
 }
 
 // =============================================================================
 // PROCESS LEAD - EXTRACT → MATCH → SAVE → CLICK → REFRESH
 // =============================================================================
 
-async function processLeadFast(listing, criteria) {
+async function processLeadFast(listing, criteria, productNumber = 1, totalProducts = 1) {
   try {
     // STEP 1: EXTRACT DATA
     const title = extractTitle(listing);
@@ -253,7 +262,7 @@ async function processLeadFast(listing, criteria) {
       verifiedPhone: verifications.phone ? "Phone Verified" : "",
     };
 
-    console.log(`%c📦 ${title.substring(0, 40)}`, "color: #3498db;");
+    console.log(`%c📦 [${productNumber}/${totalProducts}] ${title.substring(0, 40)}`, "color: #3498db;");
 
     // STEP 2: CHECK MATCHING CRITERIA
     const matchResults = checkMatch(data, criteria);
@@ -276,6 +285,7 @@ async function processLeadFast(listing, criteria) {
       time: new Date().toLocaleTimeString(),
       timestamp: Date.now(),
       scanNumber: scanCount,
+      productNumber: productNumber,
       title: data.title || "N/A",
       strength: data.strength || "N/A",
       country: data.country || "N/A",
@@ -301,23 +311,21 @@ async function processLeadFast(listing, criteria) {
     await saveToHistory(productData);
     console.log("%c💾 Saved to History", "color: #3498db;");
 
-    // STEP 6: SHOW NOTIFICATION IF MATCHED
-    if (matched && !alreadyContacted && !buttonEngaged) {
-      const matchedMed = matchResults.matchedMedicine || "Product";
-      showNotification(
-        '✅ MATCH FOUND!',
-        `${matchedMed} - ${data.country}\n${data.buyer}`,
-        'match'
-      );
-    }
-
-    // STEP 7: CLICK IF MATCHED (LIVE MODE ONLY)
+    // STEP 6: CLICK IF MATCHED (LIVE MODE ONLY) + NOTIFICATIONS
     let clicked = false;
     if (matched && !alreadyContacted && !buttonEngaged && contactBtn) {
       const isTestMode = criteria.testMode !== false;
+      const matchedMed = matchResults.matchedMedicine || "Product";
       
       if (isTestMode) {
         console.log("%c🧪 TEST MODE - NOT CLICKING", "background: #f39c12; color: white; padding: 2px 6px;");
+        
+        // Show match notification in TEST mode
+        showNotification(
+          '✅ MATCH FOUND! (Test Mode)',
+          `Product ${productNumber}/${totalProducts}\n${matchedMed} - ${data.country}\n${data.buyer}\n\n🧪 Test mode: Not clicking`,
+          'match'
+        );
       } else {
         console.log("%c🔴 LIVE MODE - CLICKING!", "background: #e74c3c; color: white; padding: 2px 6px; font-weight: bold;");
         
@@ -332,12 +340,15 @@ async function processLeadFast(listing, criteria) {
           await markContactedNow(productId, productData);
           clicked = true;
           
-          // Show contacted notification
+          // Show contacted notification in LIVE mode only
           showNotification(
             '🔔 CONTACTED!',
-            `${data.title.substring(0, 40)}\nTotal: ${totalContacted}`,
+            `Product ${productNumber}/${totalProducts}\n${matchedMed} - ${data.country}\n${data.buyer}\n\nTotal Contacted: ${totalContacted}`,
             'contacted'
           );
+          
+          // Return false to stop scanning other products
+          return false;
         } catch (error) {
           console.error("❌ Click error:", error);
         }
@@ -355,8 +366,8 @@ async function processLeadFast(listing, criteria) {
     console.error("❌ Error:", error);
   }
 
-  // STEP 8: REFRESH WITH INTERVAL
-  refreshNow(criteria.interval || 0);
+  // Return true to continue scanning other products
+  return true;
 }
 
 // =============================================================================

@@ -136,18 +136,35 @@ document.getElementById('startBtn').addEventListener('click', () => {
       return;
     }
     
-    chrome.storage.local.set({ isRunning: true }, () => {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0] && tabs[0].url && tabs[0].url.includes('indiamart.com')) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: 'start' });
-          alert('✅ Started!\n\n🔔 Notifications enabled:\n- Match found alerts\n- Contact made alerts\n\nTable will show all scanned products in real-time.');
+    // Request notification permission first
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          startScanning(result.criteria);
         } else {
-          alert('⚠️ Open IndiaMART page first!\n\nhttps://seller.indiamart.com/bltxn/?pref=');
+          alert('⚠️ Notification permission denied. You won\'t see match alerts.\n\nYou can still use the extension, but notifications will be disabled.');
+          startScanning(result.criteria);
         }
       });
-    });
+    } else {
+      startScanning(result.criteria);
+    }
   });
 });
+
+function startScanning(criteria) {
+  chrome.storage.local.set({ isRunning: true }, () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && tabs[0].url && tabs[0].url.includes('indiamart.com')) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'start' });
+        const productsText = criteria.productsToScan === 2 ? '2 products' : '1 product';
+        alert(`✅ Started!\n\n🔔 Browser notifications enabled\n📦 Scanning ${productsText} per refresh\n\nTable will show all scanned products in real-time.`);
+      } else {
+        alert('⚠️ Open IndiaMART page first!\n\nhttps://seller.indiamart.com/bltxn/?pref=');
+      }
+    });
+  });
+}
 
 document.getElementById('stopBtn').addEventListener('click', () => {
   chrome.storage.local.set({ isRunning: false }, () => {
@@ -208,6 +225,7 @@ document.getElementById('saveBtn').addEventListener('click', () => {
     verifyEmail: document.getElementById('verifyEmail').checked,
     verifyMobile: document.getElementById('verifyMobile').checked,
     interval: intervalMs,
+    productsToScan: parseInt(document.getElementById('productsToScan').value) || 1,
     testMode: testMode
   };
   
@@ -215,7 +233,8 @@ document.getElementById('saveBtn').addEventListener('click', () => {
     const mode = testMode ? '🧪 TEST' : '🔴 LIVE';
     const speed = intervalMs === 0 ? 'INSTANT (0ms)' : intervalMs < 1000 ? `${intervalMs}ms` : `${intervalMs/1000}s`;
     const prods = medicines.length > 0 ? medicines.join(', ') : 'ALL PRODUCTS';
-    alert(`✅ Saved!\n\nMode: ${mode}\nRefresh Interval: ${speed}\nProducts: ${prods}\n\n🔔 Notifications: Enabled\n⚡ Smart DOM Loading: Auto-waits for listings`);
+    const scanCount = criteria.productsToScan === 2 ? '2 products' : '1 product';
+    alert(`✅ Saved!\n\nMode: ${mode}\nRefresh Interval: ${speed}\nProducts: ${prods}\nScan Count: ${scanCount} per refresh\n\n🔔 Notifications: Enabled\n⚡ Smart DOM Loading: Auto-waits for listings`);
   });
 });
 
@@ -229,6 +248,7 @@ function loadSettings() {
       document.getElementById('verifyEmail').checked = c.verifyEmail !== false;
       document.getElementById('verifyMobile').checked = c.verifyMobile !== false;
       document.getElementById('testMode').checked = c.testMode !== false;
+      document.getElementById('productsToScan').value = c.productsToScan || 1;
       
       const intervalMs = c.interval || 0;
       if (intervalMs < 1000) {
